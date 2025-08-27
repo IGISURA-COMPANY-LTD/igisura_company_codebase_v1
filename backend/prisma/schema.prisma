@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id        String      @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      Role     @default(CUSTOMER)
+  orders    Order[]
+  reviews   Review[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String
+  price       Float
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  images      String[]
+  benefits    String
+  stockQuantity Int?   @default(0)
+  instructions String?
+  inStock     Boolean  @default(true)
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reviews     Review[]
+  orderItems  OrderItem[]
+
+  @@map("products")
+}
+
+model Category {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+model Order {
+  id           String         @id @default(uuid())
+  customer     User        @relation(fields: [userId], references: [id])
+  userId       String
+  items        OrderItem[]
+  total        Float
+  status       OrderStatus @default(NEW)
+  customerName String
+  phoneNumber  String
+  email        String
+  address      String
+  notes        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String     @id @default(uuid())
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  price     Float
+
+  @@map("order_items")
+}
+
+model Review {
+  id        String      @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reviews")
+}
+
+model BlogPost {
+  id        String      @id @default(uuid())
+  title     String
+  slug      String   @unique
+  content   String
+  author    String
+  image     String?
+  tags      String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("blog_posts")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  NEW
+  CONTACTED
+  PAYMENT_CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
