@@ -19,10 +19,8 @@ export const getAllCategories = async (req, res) => {
 export const getCategory = async (req, res) => {
   try {
     const { idOrSlug } = req.params;
-    const isNumeric = /^\d+$/.test(idOrSlug);
-    
     const category = await prisma.category.findFirst({
-      where: isNumeric ? { id: parseInt(idOrSlug) } : { slug: idOrSlug },
+      where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
       include: {
         products: {
           select: {
@@ -75,7 +73,7 @@ export const updateCategory = async (req, res) => {
     const { name, slug, description } = req.body;
 
     const category = await prisma.category.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data: { name, slug, description }
     });
 
@@ -90,7 +88,7 @@ export const deleteCategory = async (req, res) => {
     const { id } = req.params;
 
     await prisma.category.delete({
-      where: { id: parseInt(id) }
+      where: { id }
     });
 
     return res.status(201).json({ message: 'Category deleted successfully' });

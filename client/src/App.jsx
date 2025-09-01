@@ -18,8 +18,15 @@ import AdminLayout from './pages/admin/AdminLayout'
 import AdminOverview from './pages/admin/AdminOverview'
 import AdminOrders from './pages/admin/AdminOrders'
 import AdminProducts from './pages/admin/AdminProducts'
+import AdminProductForm from './pages/admin/AdminProductForm'
+import AdminProductDetail from './pages/admin/AdminProductDetail'
+import AdminCategories from './pages/admin/AdminCategories'
+import AdminCategoryForm from './pages/admin/AdminCategoryForm'
+import AdminCategoryDetail from './pages/admin/AdminCategoryDetail'
 import AdminBlog from './pages/admin/AdminBlog'
+import AdminBlogForm from './pages/admin/AdminBlogForm'
 import AdminUsers from './pages/admin/AdminUsers'
+import AdminOrderDetail from './pages/admin/AdminOrderDetail'
 import './index.css'
 
 const ProtectedRoute = ({ requireAdmin }) => {
@@ -52,7 +59,7 @@ function AnimatedRoutes() {
         <Routes location={location}>
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
-          <Route path="/product/:idOrSlug" element={<ProductDetailPage />} />
+          <Route path="/product/:slug" element={<ProductDetailPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/health-benefits" element={<HealthBenefitsPage />} />
           <Route path="/blog" element={<BlogListPage />} />
@@ -66,8 +73,18 @@ function AnimatedRoutes() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminOverview />} />
               <Route path="orders" element={<AdminOrders />} />
+              <Route path="orders/:id" element={<AdminOrderDetail />} />
               <Route path="products" element={<AdminProducts />} />
+              <Route path="products/new" element={<AdminProductForm mode="create" />} />
+              <Route path="products/:id" element={<AdminProductDetail />} />
+              <Route path="products/:id/edit" element={<AdminProductForm mode="edit" />} />
+              <Route path="categories" element={<AdminCategories />} />
+              <Route path="categories/new" element={<AdminCategoryForm mode="create" />} />
+              <Route path="categories/:id" element={<AdminCategoryForm mode="edit" />} />
+              <Route path="categories/:id/view" element={<AdminCategoryDetail />} />
               <Route path="blog" element={<AdminBlog />} />
+              <Route path="blog/new" element={<AdminBlogForm mode="create" />} />
+              <Route path="blog/:id" element={<AdminBlogForm mode="edit" />} />
               <Route path="users" element={<AdminUsers />} />
             </Route>
           </Route>

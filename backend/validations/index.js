@@ -7,7 +7,7 @@ export const productSchema = Joi.object({
   slug: Joi.string().optional(),
   description: Joi.string().required(),
   price: Joi.number().min(0).required(),
-  categoryId: Joi.number().optional(),
+  categoryId: Joi.alternatives().try(Joi.string().uuid(), Joi.string(), Joi.number()).optional(),
   stockQuantity: Joi.number().min(0).default(0).optional(),
   categorySlug: Joi.string().optional(),
   images: Joi.alternatives().try(
@@ -63,12 +63,12 @@ export const userUpdateSchema = Joi.object({
 
 export const orderSchema = Joi.object({
   items: Joi.array().items(Joi.object({
-    productId: Joi.number().required(),
+    productId: Joi.alternatives().try(Joi.string().uuid(), Joi.string(), Joi.number()).required(),
     quantity: Joi.number().min(1).required(),
     price: Joi.number().min(0).required()
   })).required(),
-  phoneNumber: Joi.string().required(),
-  address: Joi.string().required(),
+  phoneNumber: Joi.string().pattern(/^\+?2507[2389]\d{7}$/).required(),
+  address: Joi.string().min(3).required(),
   notes: Joi.string().optional()
 });
 
@@ -116,12 +116,12 @@ export const userQuerySchema = Joi.object({
 export const productQuerySchema = Joi.object({
   page: Joi.number().min(1).default(1),
   limit: Joi.number().min(1).max(100).default(10),
-  category: Joi.string().optional(),
-  minPrice: Joi.number().min(0).optional(),
-  maxPrice: Joi.number().min(0).optional(),
-  inStock: Joi.boolean().optional(),
+  category: Joi.string().allow('').optional(),
+  minPrice: Joi.alternatives().try(Joi.number().min(0), Joi.string().allow('')).optional(),
+  maxPrice: Joi.alternatives().try(Joi.number().min(0), Joi.string().allow('')).optional(),
+  inStock: Joi.alternatives().try(Joi.boolean(), Joi.string().valid('', 'true', 'false')).optional(),
   featured: Joi.boolean().optional(),
   sortBy: Joi.string().valid('name', 'price', 'createdAt', 'rating').default('createdAt'),
   sortOrder: Joi.string().valid('asc', 'desc').default('desc'),
-  search: Joi.string().optional()
+  search: Joi.string().allow('').optional()
 });

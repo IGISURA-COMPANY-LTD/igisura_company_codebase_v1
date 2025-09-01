@@ -5,6 +5,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import errorHandler from './middleware/errorHandler.js';
+import prisma from './config/database.js';
 
 import authRoutes from './routes/auth.js';
 import categoryRoutes from './routes/categories.js';
@@ -18,7 +19,7 @@ const app = express();
 // Middleware
 app.use(helmet());
 app.use(cors());
-app.use(morgan('combined'));
+app.use(morgan('short'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -45,5 +46,7 @@ app.listen(PORT, () => {
 });
 
 process.on('beforeExit', async () => {
-  await prisma.$disconnect();
+  try {
+    await prisma.$disconnect();
+  } catch {}
 });

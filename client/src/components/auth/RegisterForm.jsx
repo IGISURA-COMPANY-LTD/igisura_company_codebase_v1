@@ -30,9 +30,10 @@ export default function RegisterForm() {
     setTouched({ name: true, email: true, password: true })
     if (!isValid) return
     try {
-      await register(form)
+      const data = await register(form)
       toast.success('Account created!')
-      navigate('/')
+      if (data?.user?.role === 'ADMIN') navigate('/admin')
+      else navigate('/')
     } catch (e) {
       setApiError(e?.response?.data?.error || 'Registration failed')
     }

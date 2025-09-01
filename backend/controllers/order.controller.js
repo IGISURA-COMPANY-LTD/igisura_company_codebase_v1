@@ -98,7 +98,7 @@ export const getOrder = async (req, res) => {
 
     
     const order = await prisma.order.findUnique({
-      where: { id: parseInt(id) },
+      where: { id },
       include: {
         items: {
           include: {
@@ -117,8 +117,7 @@ export const getOrder = async (req, res) => {
           select: {
             id: true,
             name: true,
-            email: true,
-            phoneNumber: true
+            email: true
           }
         }
       }
@@ -305,7 +304,7 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: parseInt(id) },
+      where: { id },
       include: {
         items: true
       }
@@ -328,7 +327,7 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     const updatedOrder = await prisma.order.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data: { status },
       include: {
         items: {
@@ -367,7 +366,7 @@ export const deleteOrder = async (req, res) => {
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: parseInt(id) },
+      where: { id },
       include:{
         items: true
       }
@@ -391,7 +390,7 @@ export const deleteOrder = async (req, res) => {
     }
 
     await prisma.order.delete({
-      where: { id: parseInt(id) }
+      where: { id }
     });
 
     return res.json({ message: 'Order deleted successfully' });
@@ -417,7 +416,7 @@ export const getUserOrders = async (req, res) => {
 
     // Verify user exists and check permissions
     const user = await prisma.user.findUnique({
-      where: { id: parseInt(id) }
+      where: { id }
     });
 
     if (!user) {
@@ -425,11 +424,11 @@ export const getUserOrders = async (req, res) => {
     }
 
     // Check if admin or user accessing their own orders
-    if (req.user.role !== 'ADMIN' && req.user.id !== parseInt(id)) {
+    if (req.user.role !== 'ADMIN' && req.user.id !== id) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const where = { userId: parseInt(id) };
+    const where = { userId: id };
 
     if (status) {
       where.status = status;

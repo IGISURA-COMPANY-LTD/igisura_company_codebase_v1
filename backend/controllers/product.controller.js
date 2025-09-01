@@ -48,22 +48,22 @@ export const getAllProducts = async (req, res) => {
     const where = {};
 
     if (category) {
-      where.category = {
-        OR: [
-          { id: isNaN(category) ? undefined : parseInt(category) },
-          { slug: category }
-        ].filter(Boolean)
-      };
+      where.OR = [
+        { category: { slug: category } },
+        { categoryId: category }
+      ];
     }
 
-    if (minPrice !== undefined || maxPrice !== undefined) {
+    const hasMin = minPrice !== undefined && minPrice !== '';
+    const hasMax = maxPrice !== undefined && maxPrice !== '';
+    if (hasMin || hasMax) {
       where.price = {};
-      if (minPrice !== undefined) where.price.gte = parseFloat(minPrice);
-      if (maxPrice !== undefined) where.price.lte = parseFloat(maxPrice);
+      if (hasMin) where.price.gte = parseFloat(minPrice);
+      if (hasMax) where.price.lte = parseFloat(maxPrice);
     }
 
-    if (inStock !== undefined) {
-      where.inStock = inStock === 'true';
+    if (inStock !== undefined && inStock !== '') {
+      where.inStock = inStock === 'true' || inStock === true;
     }
 
     if (featured !== undefined) {
@@ -72,6 +72,7 @@ export const getAllProducts = async (req, res) => {
 
     if (search) {
       where.OR = [
+        ...(where.OR || []),
         { name: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
         { benefits: { contains: search, mode: 'insensitive' } }
@@ -152,10 +153,8 @@ export const getAllProducts = async (req, res) => {
 export const getProduct = async (req, res) => {
   try {
     const { idOrSlug } = req.params;
-    const isNumeric = /^\d+$/.test(idOrSlug);
-    
     const product = await prisma.product.findFirst({
-      where: isNumeric ? { id: parseInt(idOrSlug) } : { slug: idOrSlug },
+      where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
       include: {
         category: {
           select: {
@@ -237,7 +236,7 @@ export const createProduct = async (req, res) => {
       ? req.files.map(file => file.path) 
       : (Array.isArray(images) ? images : images ? [images] : []);  
 
-    const quantity = parseInt(stockQuantity);
+    const quantity = stockQuantity !== undefined ? parseInt(stockQuantity) : 0;
     const product = await prisma.product.create({
       data: {
         name,
@@ -281,7 +280,7 @@ export const updateProduct = async (req, res) => {
 
     // Check if product exists
     const existingProduct = await prisma.product.findUnique({
-      where: { id: parseInt(id) }
+      where: { id }
     });
 
     if (!existingProduct) {
@@ -291,7 +290,9 @@ export const updateProduct = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    const newStockQuantity = product.stockQuantity + parseInt(quantityChange);
+    const newStockQuantity = quantityChange !== undefined
+      ? (parseInt(existingProduct.stockQuantity ?? 0) + parseInt(quantityChange))
+      : undefined;
 
 
     let category;
@@ -328,7 +329,7 @@ export const updateProduct = async (req, res) => {
     }
 
     const product = await prisma.product.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data: {
         ...(name && { name }),
         ...(slug !== undefined && { slug: generatedSlug }),
@@ -340,7 +341,7 @@ export const updateProduct = async (req, res) => {
         ...(instructions !== undefined && { instructions }),
         ...(inStock !== undefined && { inStock }),
         ...(featured !== undefined && { featured }),
-        ...(quantityChange !== undefined && { stockQuantity: newStockQuantity})
+        ...(newStockQuantity !== undefined && { stockQuantity: newStockQuantity })
       },
       include: {
         category: {
@@ -376,7 +377,7 @@ export const deleteProduct = async (req, res) => {
 
     // Check if product exists
     const product = await prisma.product.findUnique({
-      where: { id: parseInt(id) }
+      where: { id }
     });
 
     if (!product) {
@@ -388,7 +389,7 @@ export const deleteProduct = async (req, res) => {
     }
 
     await prisma.product.delete({
-      where: { id: parseInt(id) }
+      where: { id }
     });
 
     return res.status(200).json({ message: 'Product deleted successfully' });

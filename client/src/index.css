@@ -24,6 +24,7 @@
     @apply h-full;
   }
 
+  html { scroll-behavior: smooth; }
   body {
     @apply bg-white text-gray-900 antialiased;
   }
@@ -52,4 +53,68 @@
 
 @utility skeleton {
   @apply animate-pulse bg-gray-200/70;
+}
+
+/* ---------- NEW UTILITIES ---------- */
+@utility btn-primary-lg {
+  @apply inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-semibold
+         bg-brand-600 text-white shadow-md hover:bg-brand-700 hover:shadow-lg
+         active:scale-95 transition-all;
+}
+
+@utility btn-secondary-lg {
+  @apply inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-semibold
+         bg-white/20 backdrop-blur text-white border border-white/30
+         hover:bg-white/30 active:scale-95 transition-all;
+}
+
+@utility btn-link {
+  @apply text-brand-700 font-medium hover:underline;
+}
+
+/* ---------- MICRO-ANIMATIONS ---------- */
+
+
+/* hover-lift for cards */
+.card-hover-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.08);
+}
+
+/* ---------- modern product-card (home page only) ---------- */
+@layer components {
+  .nav-landing {
+    @apply text-white;
+  }
+  .nav-scrolled {
+    @apply text-gray-900;
+  }
+  .home-product-card {
+    @apply relative rounded-2xl bg-white border border-gray-200 shadow-sm overflow-hidden
+           transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            @apply w-72;               
+            ;         
+  }
+  .home-product-card img {
+    @apply w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105;
+  }
+  .home-product-card .body {
+    @apply p-4;
+  }
+  .home-product-card .price {
+    @apply text-brand-700 font-bold text-xl;
+  }
+  .home-product-card .add-btn {
+    @apply w-full max-w-[160px] mx-auto mt-3 mb-4 px-4 py-2 text-sm font-semibold
+           rounded-xl bg-brand-600 text-white
+           hover:bg-brand-700 active:scale-95 transition-all;
+  }
+  
+  .hero-full {
+    @apply h-dvh;
+  }
+   
 }

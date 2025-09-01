@@ -29,9 +29,10 @@ export default function LoginForm() {
     setTouched({ email: true, password: true })
     if (!isValid) return
     try {
-      await login(form)
+      const data = await login(form)
       toast.success('Welcome back!')
-      navigate('/')
+      if (data?.user?.role === 'ADMIN') navigate('/admin')
+      else navigate('/')
     } catch (e) {
       setApiError(e?.response?.data?.error || 'Login failed')
     }

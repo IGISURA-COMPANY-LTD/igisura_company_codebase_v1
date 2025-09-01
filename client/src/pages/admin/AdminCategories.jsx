@@ -4,16 +4,16 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import ConfirmModal from '../../components/ui/ConfirmModal'
 
-export default function AdminBlog() {
-  const [posts, setPosts] = useState([])
+export default function AdminCategories() {
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const [confirm, setConfirm] = useState({ open: false, id: null, name: '' })
 
   const load = () => {
     setLoading(true)
-    api.get('/api/blog', { params: { limit: 50 } })
-      .then(({ data }) => setPosts(data.posts || []))
+    api.get('/api/categories')
+      .then(({ data }) => setCategories(Array.isArray(data) ? data : data?.categories || []))
       .catch(() => {})
       .finally(() => setLoading(false))
   }
@@ -23,8 +23,8 @@ export default function AdminBlog() {
   const doDelete = async () => {
     try {
       const id = confirm.id
-      await api.delete(`/api/blog/${id}`)
-      toast.success('Post deleted')
+      await api.delete(`/api/categories/${id}`)
+      toast.success('Category deleted')
       setConfirm({ open: false, id: null, name: '' })
       load()
     } catch (e) {
@@ -36,30 +36,32 @@ export default function AdminBlog() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Blog</h2>
-        <Link to="/admin/blog/new" className="btn-primary">New Post</Link>
+        <h2 className="text-xl font-semibold">Categories</h2>
+        <Link to="/admin/categories/new" className="btn-primary">Add New Category</Link>
       </div>
       <div className="card p-4 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-gray-600">
-              <th className="py-2">Title</th>
-              <th>Author</th>
-              <th>Tags</th>
-              <th></th>
+              <th className="py-2">Name</th>
+              <th>Slug</th>
+              <th>Products</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr><td colSpan="4" className="py-6 text-center">Loading...</td></tr>
-            ) : posts.map((p) => (
-              <tr key={p.id} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="py-4">{p.title}</td>
-                <td className="py-4">{p.author}</td>
-                <td className="py-4">{Array.isArray(p.tags) ? p.tags.join(', ') : ''}</td>
+            ) : categories.map((c) => (
+              <tr key={c.id} className="border-b border-gray-200 hover:bg-gray-50">
+                <td className="py-4">{c.name}</td>
+                <td className="py-4">{String(c.slug || '')}</td>
+                <td className="py-4">{c._count?.products ?? c.productsCount ?? '-'}</td>
                 <td className="space-x-2">
-                  <button className="btn" onClick={() => navigate(`/admin/blog/${p.id}`)}>Edit</button>
-                  <button className="btn" onClick={() => setConfirm({ open: true, id: p.id, name: p.title })}>Delete</button>
+                  <button className="btn" onClick={() => navigate(`/admin/categories/${c.id}`)}>Edit</button>
+                  <button className="btn" onClick={() => navigate(`/admin/categories/${c.id}/view`)}>View</button>
+                  <a className="btn" href={`/products?category=${encodeURIComponent(String(c.slug || c.id))}`} target="_blank" rel="noreferrer">View Products</a>
+                  <button className="btn" onClick={() => setConfirm({ open: true, id: c.id, name: c.name })}>Delete</button>
                 </td>
               </tr>
             ))}
@@ -69,7 +71,7 @@ export default function AdminBlog() {
 
       <ConfirmModal
         open={confirm.open}
-        title="Delete Post"
+        title="Delete Category"
         description={`Are you sure you want to delete ${confirm.name}?`}
         confirmText="Delete"
         onCancel={() => setConfirm({ open: false, id: null, name: '' })}
@@ -78,5 +80,3 @@ export default function AdminBlog() {
     </div>
   )
 }
-
-

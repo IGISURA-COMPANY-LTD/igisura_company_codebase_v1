@@ -20,10 +20,16 @@ export const useCartStore = create((set, get) => ({
     const current = get().items
     const idx = current.findIndex((i) => i.product.id === product.id)
     let next
+    const maxStock = typeof product.stockQuantity === 'number' ? Math.max(0, product.stockQuantity) : 99
+    const requested = Math.max(1, Math.min(maxStock, quantity))
     if (idx >= 0) {
-      next = current.map((i, k) => (k === idx ? { ...i, quantity: i.quantity + quantity } : i))
+      next = current.map((i, k) => {
+        if (k !== idx) return i
+        const newQty = Math.max(1, Math.min(maxStock, i.quantity + requested))
+        return { ...i, quantity: newQty }
+      })
     } else {
-      next = [...current, { product, quantity }]
+      next = [...current, { product, quantity: requested }]
     }
     set({ items: next })
     saveCart({ items: next })
@@ -36,7 +42,33 @@ export const useCartStore = create((set, get) => ({
   },
 
   updateQuantity(productId, quantity) {
-    const next = get().items.map((i) => (i.product.id === productId ? { ...i, quantity } : i))
+    const next = get().items.map((i) => {
+      if (i.product.id !== productId) return i
+      const maxStock = typeof i.product.stockQuantity === 'number' ? Math.max(0, i.product.stockQuantity) : 99
+      const clamped = Math.max(1, Math.min(maxStock, Number(quantity) || 1))
+      return { ...i, quantity: clamped }
+    })
+    set({ items: next })
+    saveCart({ items: next })
+  },
+
+  increment(productId, step = 1) {
+    const next = get().items.map((i) => {
+      if (i.product.id !== productId) return i
+      const maxStock = typeof i.product.stockQuantity === 'number' ? Math.max(0, i.product.stockQuantity) : 99
+      const clamped = Math.max(1, Math.min(maxStock, i.quantity + step))
+      return { ...i, quantity: clamped }
+    })
+    set({ items: next })
+    saveCart({ items: next })
+  },
+
+  decrement(productId, step = 1) {
+    const next = get().items.map((i) => {
+      if (i.product.id !== productId) return i
+      const clamped = Math.max(1, i.quantity - step)
+      return { ...i, quantity: clamped }
+    })
     set({ items: next })
     saveCart({ items: next })
   },
@@ -48,6 +80,10 @@ export const useCartStore = create((set, get) => ({
 
   total() {
     return get().items.reduce((sum, i) => sum + i.product.price * i.quantity, 0)
+  },
+
+  itemCount() {
+    return get().items.reduce((sum, i) => sum + i.quantity, 0)
   },
 }))
 

@@ -1,7 +1,7 @@
-import { prisma } from '../app';
+import prisma  from './config/database.js';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv'
-dotenv.config
+dotenv.config()
 async function createAdmin() {
     const password = process.env.ADMIN_PASSWORD
   const hashedPassword = await bcrypt.hash(password, 12);

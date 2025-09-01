@@ -71,7 +71,7 @@ export const getBlogPost = async (req, res) => {
     const isNumeric = /^\d+$/.test(idOrSlug);
 
     const post = await prisma.blogPost.findFirst({
-      where: isNumeric ? { id: parseInt(idOrSlug) } : { slug: idOrSlug }
+      where: isNumeric ? { id: idOrSlug} : { slug: idOrSlug }
     });
 
     if (!post) {
@@ -120,7 +120,7 @@ export const updateBlogPost = async (req, res) => {
     const { title, slug, content, author, image, tags } = req.body;
 
     const existingPost = await prisma.blogPost.findUnique({
-      where: { id: parseInt(id) }
+      where: { id: id }
     });
 
     if (!existingPost) {
@@ -134,7 +134,7 @@ export const updateBlogPost = async (req, res) => {
       .trim('-') : undefined);
 
     const post = await prisma.blogPost.update({
-      where: { id: parseInt(id) },
+      where: { id: id },
       data: {
         ...(title && { title }),
         ...(slug !== undefined && { slug: generatedSlug }),
@@ -159,7 +159,7 @@ export const deleteBlogPost = async (req, res) => {
     const { id } = req.params;
 
     const post = await prisma.blogPost.findUnique({
-      where: { id: parseInt(id) }
+      where: { id: id }
     });
 
     if (!post) {
@@ -167,7 +167,7 @@ export const deleteBlogPost = async (req, res) => {
     }
 
     await prisma.blogPost.delete({
-      where: { id: parseInt(id) }
+      where: { id: id }
     });
 
     return res.status(200).json({ message: 'Blog post deleted successfully' });

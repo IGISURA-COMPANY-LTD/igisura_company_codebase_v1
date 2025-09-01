@@ -79,7 +79,7 @@ export const getUser = async (req, res) => {
     const { id } = req.params;
 
     const user = await prisma.user.findUnique({
-      where: { id: parseInt(id) },
+      where: { id },
       select: {
         id: true,
         email: true,
@@ -133,7 +133,7 @@ export const getUser = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    return res.status.json(user);
+    return res.status(200).json(user);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -182,7 +182,7 @@ export const updateUser = async (req, res) => {
     const { email, name, role } = req.body;
 
     const existingUser = await prisma.user.findUnique({
-      where: { id: parseInt(id) }
+      where: { id }
     });
 
     if (!existingUser) {
@@ -201,7 +201,7 @@ export const updateUser = async (req, res) => {
     }
 
     const user = await prisma.user.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data: { email, name, role },
       select: {
         id: true,
@@ -224,7 +224,7 @@ export const deleteUser = async (req, res) => {
     const { id } = req.params;
 
     const user = await prisma.user.findUnique({
-      where: { id: parseInt(id) }
+      where: { id }
     });
 
     if (!user) {
@@ -232,12 +232,12 @@ export const deleteUser = async (req, res) => {
     }
 
     // Prevent deletion of own account
-    if (parseInt(id) === req.user.id) {
+    if (id === req.user.id) {
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
     await prisma.user.delete({
-      where: { id: parseInt(id) }
+      where: { id }
     });
 
     return res.status(200).json({ message: 'User deleted successfully' });

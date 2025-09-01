@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import ProductCard from '../components/cards/ProductCard'
 import api from '../lib/api'
+// If rc-slider is installed, uncomment the next line
+import 'rc-slider/assets/index.css'
+import Slider from 'rc-slider'
 
 export default function Products() {
   const { products, pagination, filters, setFilter, setFilters, fetchProducts, loading } = useProductsStore()
@@ -43,9 +46,9 @@ export default function Products() {
     setFilters({ ...reset, page: 1 })
   }
 
-  // Dual range slider using two overlapping range inputs
+  // Price range config
   const minAllowed = 0
-  const maxAllowed = 1000
+  const maxAllowed = 100000
   const minVal = Number(draft.minPrice || 0)
   const maxVal = Number(draft.maxPrice || maxAllowed)
 
@@ -65,15 +68,31 @@ export default function Products() {
               {/* Price range slider + inputs */}
               <div className="space-y-2">
                 <div className="text-sm text-gray-700">Price range</div>
-                <div className="relative h-8">
-                  <input type="range" min={minAllowed} max={maxAllowed} value={Math.min(minVal, maxVal - 1)} onChange={(e) => setDraft({ ...draft, minPrice: Number(e.target.value) })} className="absolute left-0 right-0 top-3 w-full appearance-none bg-transparent pointer-events-auto" />
-                  <input type="range" min={minAllowed} max={maxAllowed} value={Math.max(maxVal, minVal + 1)} onChange={(e) => setDraft({ ...draft, maxPrice: Number(e.target.value) })} className="absolute left-0 right-0 top-3 w-full appearance-none bg-transparent pointer-events-auto" />
-                  <div className="absolute left-0 right-0 top-5 h-1 bg-gray-200 rounded" />
-                  <div className="absolute top-5 h-1 bg-brand-500 rounded" style={{ left: `${(Math.min(minVal, maxVal) / maxAllowed) * 100}%`, right: `${(1 - Math.max(minVal, maxVal) / maxAllowed) * 100}%` }} />
-                </div>
+                <Slider
+                  range
+                  min={minAllowed}
+                  max={maxAllowed}
+                  value={[minVal, maxVal]}
+                  onChange={(vals) => {
+                    const [min, max] = Array.isArray(vals) ? vals : [minVal, maxVal]
+                    setDraft({ ...draft, minPrice: min, maxPrice: max })
+                  }}
+                  allowCross={false}
+                  trackStyle={[{ backgroundColor: '#169361', height: 6 }]}
+                  handleStyle={[{ borderColor: '#169361' }, { borderColor: '#169361' }]}
+                  railStyle={{ backgroundColor: '#e5e7eb', height: 6 }}
+                />
                 <div className="grid grid-cols-2 gap-2">
-                  <input className="border rounded-lg px-3 py-2" placeholder="Min" value={draft.minPrice} onChange={(e) => setDraft({ ...draft, minPrice: Number(e.target.value || 0) })} />
-                  <input className="border rounded-lg px-3 py-2" placeholder="Max" value={draft.maxPrice} onChange={(e) => setDraft({ ...draft, maxPrice: Number(e.target.value || maxAllowed) })} />
+                  <input className="border rounded-lg px-3 py-2" placeholder="Min" value={draft.minPrice} onChange={(e) => {
+                    const v = Number(e.target.value || 0)
+                    const next = Math.min(Math.max(v, minAllowed), maxVal - 1)
+                    setDraft({ ...draft, minPrice: next })
+                  }} />
+                  <input className="border rounded-lg px-3 py-2" placeholder="Max" value={draft.maxPrice} onChange={(e) => {
+                    const v = Number(e.target.value || maxAllowed)
+                    const next = Math.max(Math.min(v, maxAllowed), minVal + 1)
+                    setDraft({ ...draft, maxPrice: next })
+                  }} />
                 </div>
               </div>
               <label className="flex items-center gap-2 text-sm">
@@ -141,6 +160,86 @@ export default function Products() {
           </section>
         </div>
       </div>
+
+      {/* Floating Filters button for mobile */}
+      <button
+        className="fixed md:hidden bottom-4 left-1/2 -translate-x-1/2 z-30 px-5 py-3 rounded-full shadow-lg bg-white text-gray-900 border border-gray-200"
+        onClick={() => setDraft({ ...draft, _mobileOpen: true })}
+        aria-label="Open filters"
+      >
+        Filters
+      </button>
+
+      {/* Bottom sheet for filters on mobile */}
+      {draft._mobileOpen && (
+        <div className="md:hidden fixed inset-0 z-40">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setDraft({ ...draft, _mobileOpen: false })} />
+          <div className="absolute inset-x-0 bottom-0 bg-white rounded-t-2xl p-5 shadow-2xl max-h-[80vh] overflow-auto">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm font-medium">Filters</div>
+              <button className="size-8 rounded hover:bg-gray-100" onClick={() => setDraft({ ...draft, _mobileOpen: false })} aria-label="Close">✕</button>
+            </div>
+            <div className="space-y-4">
+              <input className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-0 focus:border-brand-600" placeholder="Search" value={draft.search} onChange={(e) => setDraft({ ...draft, search: e.target.value })} />
+              <select className="w-full border rounded-lg px-3 py-2" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })}>
+                <option value="">All Categories</option>
+                {categories.map((c) => <option key={c.id} value={c.slug || c.id}>{c.name}</option>)}
+              </select>
+              <div className="space-y-2">
+                <div className="text-sm text-gray-700">Price range</div>
+                <Slider
+                  range
+                  min={minAllowed}
+                  max={maxAllowed}
+                  value={[minVal, maxVal]}
+                  onChange={(vals) => {
+                    const [min, max] = Array.isArray(vals) ? vals : [minVal, maxVal]
+                    setDraft({ ...draft, minPrice: min, maxPrice: max })
+                  }}
+                  allowCross={false}
+                  trackStyle={[{ backgroundColor: '#169361', height: 6 }]}
+                  handleStyle={[{ borderColor: '#169361' }, { borderColor: '#169361' }]}
+                  railStyle={{ backgroundColor: '#e5e7eb', height: 6 }}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input className="border rounded-lg px-3 py-2" placeholder="Min" value={draft.minPrice} onChange={(e) => {
+                    const v = Number(e.target.value || 0)
+                    const next = Math.min(Math.max(v, minAllowed), maxVal - 1)
+                    setDraft({ ...draft, minPrice: next })
+                  }} />
+                  <input className="border rounded-lg px-3 py-2" placeholder="Max" value={draft.maxPrice} onChange={(e) => {
+                    const v = Number(e.target.value || maxAllowed)
+                    const next = Math.max(Math.min(v, maxAllowed), minVal + 1)
+                    setDraft({ ...draft, maxPrice: next })
+                  }} />
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={!!draft.inStock} onChange={(e) => setDraft({ ...draft, inStock: e.target.checked })} />
+                In Stock only
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <select className="border rounded-lg px-3 py-2" value={draft.sortBy} onChange={(e) => setDraft({ ...draft, sortBy: e.target.value })}>
+                  <option value="createdAt">Newest</option>
+                  <option value="price">Price</option>
+                  <option value="name">Name</option>
+                  <option value="rating">Rating</option>
+                </select>
+                <select className="border rounded-lg px-3 py-2" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: e.target.value })}>
+                  <option value="desc">Desc</option>
+                  <option value="asc">Asc</option>
+                </select>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button className="btn-primary flex-1 disabled:opacity-70" onClick={() => { applyFilters(); setDraft({ ...draft, _mobileOpen: false }) }} disabled={loading}>
+                  {loading ? 'Applying...' : 'Apply'}
+                </button>
+                <button type="button" className="btn" onClick={clearAll} disabled={loading}>Clear</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   )
 }

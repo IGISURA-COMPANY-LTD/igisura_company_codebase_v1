@@ -19,7 +19,18 @@ export const useProductsStore = create((set, get) => ({
   async fetchProducts(params) {
     set({ loading: true, error: null })
     try {
-      const query = { ...get().filters, ...(params || {}) }
+      const raw = { ...get().filters, ...(params || {}) }
+      const query = Object.entries(raw).reduce((acc, [key, value]) => {
+        if (value === undefined || value === null) return acc
+        if (typeof value === 'string' && value.trim() === '') return acc
+        if (key === 'inStock') {
+          if (value === true) acc.inStock = true
+          // omit when false to avoid forcing false filter
+          return acc
+        }
+        acc[key] = value
+        return acc
+      }, {})
       const { data } = await api.get('/api/products', { params: query })
       set({ products: data.products || [], pagination: data.pagination || {}, loading: false })
       return data
