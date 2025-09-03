@@ -22,6 +22,18 @@ const storage = new CloudinaryStorage({
   },
 });
 
+const storageBlog = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'igisura/blog',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    transformation: [
+      { width: 1200, height: 630, crop: 'limit', quality: 'auto' },
+      { format: 'webp' }
+    ],
+  },
+});
+
 const upload = multer({ 
   storage,
   limits: {
@@ -36,4 +48,18 @@ const upload = multer({
   }
 });
 
-export { cloudinary, upload };
+const uploadBlog = multer({
+  storage: storageBlog,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'), false);
+    }
+  }
+});
+
+export { cloudinary, upload, uploadBlog };

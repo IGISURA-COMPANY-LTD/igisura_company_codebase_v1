@@ -25,6 +25,7 @@ import AdminCategoryForm from './pages/admin/AdminCategoryForm'
 import AdminCategoryDetail from './pages/admin/AdminCategoryDetail'
 import AdminBlog from './pages/admin/AdminBlog'
 import AdminBlogForm from './pages/admin/AdminBlogForm'
+import AdminBlogDetail from './pages/admin/AdminBlogDetail'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminUserDetail from './pages/admin/AdminUserDetail'
 import AdminOrderDetail from './pages/admin/AdminOrderDetail'
@@ -86,6 +87,7 @@ function AnimatedRoutes() {
               <Route path="blog" element={<AdminBlog />} />
               <Route path="blog/new" element={<AdminBlogForm mode="create" />} />
               <Route path="blog/:id" element={<AdminBlogForm mode="edit" />} />
+              <Route path="blog/:id/view" element={<AdminBlogDetail />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="users/:id" element={<AdminUserDetail />} />
             </Route>

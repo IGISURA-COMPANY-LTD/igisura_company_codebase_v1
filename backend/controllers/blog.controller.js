@@ -1,5 +1,6 @@
 // controllers/blogController.js
 import prisma from '../config/database.js';
+import { cloudinary } from '../config/cloudinary.js';
 
 export const getAllBlogPosts = async (req, res) => {
   try {
@@ -133,6 +134,17 @@ export const updateBlogPost = async (req, res) => {
       .replace(/-+/g, '-')
       .trim('-') : undefined);
 
+    // If a new image is provided and there was an existing one, delete the old one
+    if (image !== undefined && existingPost.image && existingPost.image !== image) {
+      try {
+        const publicId = existingPost.image.split('/').pop().split('.')[0];
+        const fullPublicId = `igisura/blog/${publicId}`;
+        await cloudinary.uploader.destroy(fullPublicId);
+      } catch (e) {
+        // ignore deletion errors
+      }
+    }
+
     const post = await prisma.blogPost.update({
       where: { id: id },
       data: {
@@ -166,6 +178,17 @@ export const deleteBlogPost = async (req, res) => {
       return res.status(404).json({ error: 'Blog post not found' });
     }
 
+    // delete cover image if present
+    try {
+      if (post.image) {
+        const publicId = post.image.split('/').pop().split('.')[0];
+        const fullPublicId = `igisura/blog/${publicId}`;
+        await cloudinary.uploader.destroy(fullPublicId);
+      }
+    } catch (e) {
+      // ignore deletion errors
+    }
+
     await prisma.blogPost.delete({
       where: { id: id }
     });
@@ -189,6 +212,17 @@ export const getBlogPostBySlug = async (req, res) => {
     }
 
     return res.status(200).json(post);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const uploadBlogImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image uploaded' });
+    }
+    return res.json({ image: req.file.path });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

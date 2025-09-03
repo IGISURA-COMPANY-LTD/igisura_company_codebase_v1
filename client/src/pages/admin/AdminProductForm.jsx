@@ -90,38 +90,37 @@ export default function AdminProductForm({ mode = 'create' }) {
       <form className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={submit}>
         <FieldFloat id="name" label="Name" value={form.name} onChange={(name) => setForm((prev) => ({ ...prev, name, slug: !isEdit && !slugTouched ? name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : prev.slug }))} required />
         <FieldFloat id="slug" label="Slug" value={form.slug} onChange={(v) => { setForm({ ...form, slug: v }); setSlugTouched(true) }} />
-        <div className="md:col-span-2">
-          <label className="block text-sm mb-1">Description</label>
-          <textarea className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-600" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
-        </div>
+        <FieldFloat className="md:col-span-2" as="textarea" id="description" label="Description" value={form.description} onChange={(v) => setForm({ ...form, description: v })} required rows={6} />
         <FieldFloat id="price" type="number" label="Price" value={form.price} onChange={(v) => setForm({ ...form, price: v })} required />
-        <div>
-          <label className="block text-sm mb-1">Category</label>
-          <div className="flex gap-2">
-            <select className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-600" value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>
-              <option value="">Select category</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-            <button type="button" className="btn" onClick={() => setCatOpen(true)}>Add Category</button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
+          <FieldFloat
+            as="select"
+            id="category"
+            label="Category"
+            value={form.categoryId}
+            onChange={(v) => setForm({ ...form, categoryId: v })}
+            options={[{ value: '', label: 'Select category' }, ...categories.map((c) => ({ value: String(c.id), label: c.name }))]}
+          />
+          <div className="flex items-end">
+            <button type="button" className="btn-primary w-full md:w-auto" onClick={() => setCatOpen(true)}>+ Add Category</button>
           </div>
         </div>
-        <FieldFloat id="stockQuantity" type="number" label="Stock Quantity" value={form.stockQuantity} onChange={(v) => setForm({ ...form, stockQuantity: v })} />
-        <div>
-          <label className="block text-sm mb-1">In Stock</label>
-          <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={!!form.inStock} onChange={(e) => setForm({ ...form, inStock: e.target.checked })} /> In Stock</label>
+        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FieldFloat id="stockQuantity" type="number" label="Stock Quantity" value={form.stockQuantity} onChange={(v) => setForm({ ...form, stockQuantity: v })} />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm mb-1">In Stock</label>
+              <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={!!form.inStock} onChange={(e) => setForm({ ...form, inStock: e.target.checked })} /> In Stock</label>
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Featured</label>
+              <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={!!form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} /> Featured</label>
+            </div>
+          </div>
         </div>
-        <div>
-          <label className="block text-sm mb-1">Featured</label>
-          <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={!!form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} /> Featured</label>
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm mb-1">Benefits</label>
-          <textarea className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-600" value={form.benefits} onChange={(e) => setForm({ ...form, benefits: e.target.value })} />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm mb-1">Instructions</label>
-          <textarea className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-600" value={form.instructions} onChange={(e) => setForm({ ...form, instructions: e.target.value })} />
-        </div>
+
+        <FieldFloat className="md:col-span-2" as="textarea" id="benefits" label="Benefits" value={form.benefits} onChange={(v) => setForm({ ...form, benefits: v })} rows={5} />
+        <FieldFloat className="md:col-span-2" as="textarea" id="instructions" label="Instructions" value={form.instructions} onChange={(v) => setForm({ ...form, instructions: v })} rows={5} />
 
         <div className="md:col-span-2">
           <div className="flex items-center justify-between">
@@ -132,7 +131,7 @@ export default function AdminProductForm({ mode = 'create' }) {
             onDragOver={(e) => { e.preventDefault() }}
             onDrop={(e) => { e.preventDefault(); uploadImages(e.dataTransfer.files) }}
           >
-            <div className="text-sm text-gray-600">Drag & drop images here, or click above to select files.</div>
+            <div className="text-gray-600">Drag & drop images here, or click above to select files.</div>
             {Array.isArray(form.images) && form.images.length > 0 && (
               <div className="mt-3 grid grid-cols-3 md:grid-cols-6 gap-3">
                 {form.images.map((url) => (
@@ -175,18 +174,9 @@ export default function AdminProductForm({ mode = 'create' }) {
                   toast.error(err?.response?.data?.error || 'Failed to create category')
                 }
               }}>
-                <div>
-                  <label className="block text-sm mb-1">Name</label>
-                  <input className="w-full border rounded-lg px-3 py-2" value={catForm.name} onChange={(e) => setCatForm({ ...catForm, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })} required />
-                </div>
-                <div>
-                  <label className="block text-sm mb-1">Slug</label>
-                  <input className="w-full border rounded-lg px-3 py-2" value={catForm.slug} onChange={(e) => setCatForm({ ...catForm, slug: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-sm mb-1">Description</label>
-                  <textarea className="w-full border rounded-lg px-3 py-2" value={catForm.description} onChange={(e) => setCatForm({ ...catForm, description: e.target.value })} />
-                </div>
+                <FieldFloat id="cat_name" label="Name" value={catForm.name} onChange={(v) => setCatForm({ ...catForm, name: v, slug: v.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })} required />
+                <FieldFloat id="cat_slug" label="Slug" value={catForm.slug} onChange={(v) => setCatForm({ ...catForm, slug: v })} />
+                <FieldFloat as="textarea" id="cat_description" label="Description" value={catForm.description} onChange={(v) => setCatForm({ ...catForm, description: v })} rows={4} />
                 <div className="flex items-center justify-end gap-2 pt-2">
                   <button type="button" className="btn" onClick={() => setCatOpen(false)}>Cancel</button>
                   <button className="btn-primary" type="submit">Create</button>

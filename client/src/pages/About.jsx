@@ -1,22 +1,67 @@
-import Layout from '../components/layout/Layout'
+// about.jsx
+import Layout from '../components/layout/Layout';
 
 export default function About() {
   return (
     <Layout>
-      <div className="mx-auto max-w-3xl px-4 py-12 space-y-6">
-        <h1 className="text-3xl font-semibold">About Us</h1>
-        <section>
-          <h2 className="text-xl font-medium">Her Story</h2>
-          <p className="mt-2 text-gray-700">After listening to many of the President Paul Kagame speeches encouraging our generation to create our own businesses and improving by expanding those start-ups; the fear that I always had of not being confident and of failure suddenly vanished. Thus was the idea born of researching and developing products derived from the stinging nettle plants.</p>
+      <div className="mx-auto max-w-3xl px-4 py-20 sm:py-24">
+        {/* Hero headline */}
+        <header className="text-center mb-14">
+          <h1 className="text-4xl sm:text-5xl font-bold text-brand-700">
+            About Us
+          </h1>
+          <p className="mt-3 text-lg text-gray-600">
+            The journey from a single speech to a thriving nettle-powered future.
+          </p>
+        </header>
+
+        {/* Her Story */}
+        <section className="card p-6 sm:p-8 mb-10">
+          <h2 className="section-title text-brand-600">Her Story</h2>
+          <p className="text-gray-700 leading-relaxed">
+            After listening to many of President Paul Kagame’s speeches encouraging our
+            generation to create businesses and scale them, the fear I once had—of
+            failure and self-doubt—vanished. That spark became the idea to research and
+            develop products derived from stinging nettle plants, transforming an
+            overlooked weed into opportunity.
+          </p>
         </section>
-        <section>
-          <h2 className="text-xl font-medium">Mission & Vision</h2>
-          <p className="mt-2 text-gray-700">Mission: Support and empower nettle farmers by providing efficient, affordable processing technology and building the business structure to bring nettle products to market.</p>
-          <p className="mt-2 text-gray-700">Vision: To be a sustainable and innovative enterprise producing high quality nettle products to reduce malnutrition and create jobs.</p>
+
+        {/* Mission & Vision */}
+        <section className="card p-6 sm:p-8">
+          <h2 className="section-title text-brand-600">Mission & Vision</h2>
+
+          <div className="space-y-5">
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-1">Mission</h3>
+              <p className="text-gray-700 leading-relaxed">
+                Support and empower nettle farmers by providing efficient, affordable
+                processing technology and building the business structure to bring
+                high-quality nettle products to market.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-1">Vision</h3>
+              <p className="text-gray-700 leading-relaxed">
+                To be a sustainable and innovative enterprise producing premium nettle
+                products that reduce malnutrition and create meaningful jobs across
+                Rwanda and beyond.
+              </p>
+            </div>
+          </div>
         </section>
+
+        {/* Optional CTA */}
+        <footer className="mt-12 text-center">
+          <a
+            href="/contact"
+            className="btn-primary-lg"
+          >
+            Support Us
+          </a>
+        </footer>
       </div>
     </Layout>
-  )
+  );
 }
-
-

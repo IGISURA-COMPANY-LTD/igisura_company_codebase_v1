@@ -39,7 +39,7 @@
 
 
 @utility btn {
-  @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm
+  @apply inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm
          font-medium transition-transform duration-150 active:scale-95
          disabled:opacity-50 disabled:pointer-events-none;
 }
@@ -68,6 +68,14 @@
   @apply inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-semibold
          bg-white/20 backdrop-blur text-white border border-white/30
          hover:bg-white/30 active:scale-95 transition-all;
+}
+
+@utility btn-secondary {
+  @apply btn bg-brand-600 text-brand-50
+   hover:bg-brand-800 ;
+}
+@utility btn-danger {
+  @apply btn bg-red-800 text-white hover:bg-red-900 ;
 }
 
 @utility btn-link {
@@ -114,28 +122,37 @@
     @apply card p-4 overflow-x-auto;
   }
   .admin-table {
-    @apply w-full text-sm;
+    @apply w-full text-base border-collapse;
   }
   .admin-thead {
-    @apply text-left text-gray-600;
+    @apply text-left text-gray-600 bg-gray-800/15;
   }
   .admin-tr {
-    @apply border-b border-gray-200;
+    @apply border-b border-gray-300 transition-colors duration-150;
   }
   .admin-tr-clickable {
-    @apply cursor-pointer hover:bg-gray-50 focus:bg-gray-50 outline-none;
+    @apply cursor-pointer focus:bg-gray-50 outline-none;
   }
   .admin-td, .admin-th {
-    @apply py-3 px-2 align-middle;
+    @apply py-2 px-3 align-middle;
+  }
+  .admin-th {
+    @apply font-medium text-gray-700 border-b border-gray-300 ;
   }
   .admin-tbody-zebra > tr:nth-child(even) {
-    @apply bg-gray-50;
+    @apply bg-gray-50/50;
+  }
+  .admin-tbody-zebra > tr:nth-child(odd) {
+    @apply bg-white;
+  }
+  .admin-tbody-zebra > tr:hover {
+    @apply bg-slate-500/20   ;
   }
   .admin-pagination {
-    @apply flex items-center justify-between text-sm py-2;
+    @apply flex items-center justify-between text-base py-4 px-4 bg-gray-50 rounded-b-lg border-t border-gray-200;
   }
   .admin-pagination .pager {
-    @apply flex gap-2;
+    @apply flex gap-3;
   }
   .nav-landing {
     @apply text-white;

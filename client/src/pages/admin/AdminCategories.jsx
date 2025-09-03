@@ -9,6 +9,7 @@ export default function AdminCategories() {
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const [confirm, setConfirm] = useState({ open: false, id: null, name: '' })
+  const [search, setSearch] = useState('')
 
   const load = () => {
     setLoading(true)
@@ -36,8 +37,20 @@ export default function AdminCategories() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Categories</h2>
-        <Link to="/admin/categories/new" className="btn-primary">Add New Category</Link>
+        <h2 className="text-2xl font-semibold">Categories</h2>
+      </div>
+      <div className="flex items-center justify-between">
+        <div />
+        <div className="flex items-center gap-3">
+          <Link to="/admin/categories/new" className="btn-primary">Add New Category</Link>
+          <input
+            aria-label="Search categories"
+            placeholder="Search categories..."
+            className="border rounded-lg px-4 py-2 text-base w-64"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       </div>
       <div className="admin-table-wrap">
         <table className="admin-table" role="table" aria-label="Categories table">
@@ -46,24 +59,53 @@ export default function AdminCategories() {
               <th className="admin-th">Name</th>
               <th className="admin-th">Slug</th>
               <th className="admin-th">Products</th>
+              <th className="admin-th">Created</th>
               <th className="admin-th" aria-hidden>Actions</th>
             </tr>
           </thead>
           <tbody className="admin-tbody-zebra">
             {loading ? (
-              <tr><td colSpan="4" className="py-6 text-center">Loading...</td></tr>
-            ) : categories.map((c) => (
-              <tr key={c.id} className="admin-tr admin-tr-clickable" tabIndex={0}
+              <tr><td colSpan="5" className="py-6 text-center">Loading...</td></tr>
+            ) : categories
+              .filter((c) => {
+                const term = search.trim().toLowerCase()
+                if (!term) return true
+                return (
+                  (c.name || '').toLowerCase().includes(term) ||
+                  String(c.slug || '').toLowerCase().includes(term) ||
+                  String(c.description || '').toLowerCase().includes(term)
+                )
+              })
+              .map((c) => (
+              <tr key={c.id} className="admin-tr admin-tr-clickable border-b border-gray-300" tabIndex={0}
                   onClick={() => navigate(`/admin/categories/${c.id}/view`)}
                   onKeyDown={(e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); navigate(`/admin/categories/${c.id}/view`) } }}>
-                <td className="admin-td">{c.name}</td>
-                <td className="admin-td">{String(c.slug || '')}</td>
-                <td className="admin-td">{c._count?.products ?? c.productsCount ?? '-'}</td>
-                <td className="admin-td space-x-2">
-                  <button className="btn" onClick={() => navigate(`/admin/categories/${c.id}`)}>Edit</button>
-                  <button className="btn" onClick={() => navigate(`/admin/categories/${c.id}/view`)}>View</button>
-                  <a className="btn" href={`/products?category=${encodeURIComponent(String(c.slug || c.id))}`} target="_blank" rel="noreferrer">View Products</a>
-                  <button className="btn" onClick={() => setConfirm({ open: true, id: c.id, name: c.name })}>Delete</button>
+                <td className="admin-td">
+                  <div>
+                    <div className="font-medium">{c.name}</div>
+                    {/* {c.description && (
+                      <div className="text-sm text-gray-500 line-clamp-2">{c.description}</div>
+                    )} */}
+                  </div>
+                </td>
+                <td className="admin-td">
+                  <code className="text-sm bg-gray-100 px-3 py-2 rounded">{String(c.slug || '')}</code>
+                </td>
+                <td className="admin-td">
+                  <span className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-medium ${
+                    (c._count?.products ?? c.productsCount ?? 0) > 0 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {c._count?.products ?? c.productsCount ?? 0} products
+                  </span>
+                </td>
+                <td className="admin-td text-base text-gray-600">
+                  {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-'}
+                </td>
+                <td className="admin-td space-x-3">
+                  <button className="btn-secondary text-base px-4 py-1.5" onClick={(e)=>{ e.stopPropagation(); navigate(`/admin/categories/${c.id}`) }}>Edit</button>
+                  <button className="btn-danger text-base px-4 py-1.5" onClick={(e)=>{ e.stopPropagation(); setConfirm({ open: true, id: c.id, name: c.name }) }}>Delete</button>
                 </td>
               </tr>
             ))}

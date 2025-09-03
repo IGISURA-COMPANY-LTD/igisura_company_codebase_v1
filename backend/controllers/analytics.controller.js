@@ -84,6 +84,60 @@ export const getDashboardStats = async (req, res) => {
   }
 };
 
+export const getRevenueTrend = async (req, res) => {
+  try {
+    const now = new Date();
+    const months = Array.from({ length: 12 }).map((_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+      return { year: d.getFullYear(), month: d.getMonth() };
+    });
+
+    const results = [];
+    for (const { year, month } of months) {
+      const start = new Date(year, month, 1);
+      const end = new Date(year, month + 1, 1);
+      const agg = await prisma.order.aggregate({
+        _sum: { total: true },
+        where: { status: 'DELIVERED', createdAt: { gte: start, lt: end } }
+      });
+      results.push({
+        label: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2,'0')}`,
+        value: agg._sum.total || 0
+      });
+    }
+
+    res.json({ series: results });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getOrdersTrend = async (req, res) => {
+  try {
+    const now = new Date();
+    const months = Array.from({ length: 12 }).map((_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+      return { year: d.getFullYear(), month: d.getMonth() };
+    });
+
+    const results = [];
+    for (const { year, month } of months) {
+      const start = new Date(year, month, 1);
+      const end = new Date(year, month + 1, 1);
+      const count = await prisma.order.count({
+        where: { createdAt: { gte: start, lt: end } }
+      });
+      results.push({
+        label: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2,'0')}`,
+        value: count
+      });
+    }
+
+    res.json({ series: results });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 // // still in development
 // export const getRevenueAnalytics = async (req, res) => {
 //   try {

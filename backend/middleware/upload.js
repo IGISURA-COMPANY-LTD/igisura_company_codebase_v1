@@ -1,7 +1,10 @@
 // middleware/uploadMiddleware.js
-import { upload } from '../config/cloudinary.js';
+import { upload, uploadBlog } from '../config/cloudinary.js';
+import multer from 'multer';
 
 export const uploadProductImages = upload.array('images', 5); // Max 5 images
+
+export const uploadBlogImage = uploadBlog.single('image');
 
 export const handleUploadErrors = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
@@ -27,5 +30,11 @@ export const processUploadedImages = (req, res, next) => {
 
   // Extract Cloudinary URLs from uploaded files
   req.body.images = req.files.map(file => file.path);
+  next();
+};
+
+export const processUploadedBlogImage = (req, res, next) => {
+  if (!req.file) return next();
+  req.body.image = req.file.path;
   next();
 };

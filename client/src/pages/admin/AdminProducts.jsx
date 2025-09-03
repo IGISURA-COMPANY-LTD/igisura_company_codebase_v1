@@ -33,13 +33,15 @@ export default function AdminProducts() {
   }
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Products</h2>
-        <Link to="/admin/products/new" className="btn-primary">Add New Product</Link>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold">Products</h2>
       </div>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-4">
         <div />
-        <input aria-label="Search products" placeholder="Search" className="border rounded px-2 py-1 text-sm" value={filters.search} onChange={(e)=> setFilters({ ...filters, page: 1, search: e.target.value })} />
+        <div className="flex items-center gap-3">
+          <Link to="/admin/products/new" className="btn-primary">Add New Product</Link>
+          <input aria-label="Search products" placeholder="Search products..." className="border rounded-lg px-4 py-2 text-base w-64" value={filters.search} onChange={(e)=> setFilters({ ...filters, page: 1, search: e.target.value })} />
+        </div>
       </div>
       <div className="admin-table-wrap">
         <table className="admin-table" role="table" aria-label="Products table">
@@ -50,13 +52,13 @@ export default function AdminProducts() {
               <th className="admin-th">Price</th>
               <th className="admin-th">Stock</th>
               <th className="admin-th">Category</th>
-              <th className="admin-th">Featured</th>
+              <th className="admin-th">Status</th>
               <th className="admin-th" aria-hidden>Actions</th>
             </tr>
           </thead>
           <tbody className="admin-tbody-zebra">
             {loading ? (
-              <tr><td colSpan="7" className="py-6 text-center">Loading...</td></tr>
+              <tr><td colSpan="7" className="py-4 text-center">Loading...</td></tr>
             ) : products.map((p) => (
               <tr
                 key={p.id}
@@ -66,19 +68,38 @@ export default function AdminProducts() {
                 onKeyDown={(e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); navigate(`/admin/products/${p.id}`) } }}
               >
                 <td className="admin-td">
-                  <div className="size-14 rounded bg-gray-100 overflow-hidden">
+                  <div className="size-10 rounded bg-gray-100 overflow-hidden">
                     {p.images?.[0] && <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />}
                   </div>
                 </td>
-                <td className="admin-td">{p.name}</td>
-                <td className="admin-td">${Number(p.price).toFixed(2)}</td>
-                <td className={`admin-td ${p.stockQuantity <= 5 ? 'text-red-600 font-medium' : ''}`}>{p.stockQuantity ?? (p.inStock ? 'In stock' : 'Out')}</td>
-                <td className="admin-td">{p.category?.name || '-'}</td>
-                <td className="admin-td">{p.featured ? 'Yes' : 'No'}</td>
-                <td className="admin-td space-x-2">
-                  <button className="btn" onClick={(e) => { e.stopPropagation(); navigate(`/admin/products/${p.id}`) }}>View</button>
-                  <button className="btn" onClick={(e) => { e.stopPropagation(); navigate(`/admin/products/${p.id}/edit`) }}>✏️ Edit</button>
-                  <button className="btn" onClick={(e) => { e.stopPropagation(); setConfirm({ open: true, id: p.id, name: p.name }) }}>🗑️ Delete</button>
+                <td className="admin-td">
+                  <div>
+                    <div className="font-medium">{p.name}</div>
+                    {/* <div className="text-sm text-gray-500">{p.slug}</div> */}
+                  </div>
+                </td>
+                <td className="admin-td font-semibold text-brand-700 text-lg">${Number(p.price).toFixed(2)}</td>
+                <td className={`admin-td text-base ${p.stockQuantity <= 5 ? 'text-red-600 font-medium' : ''}`}>
+                  {p.stockQuantity ?? (p.inStock ? 'In stock' : 'Out')}
+                </td>
+                <td className="admin-td text-base">{p.category?.name || '-'}</td>
+                <td className="admin-td">
+                  <div className="flex flex-col gap-2">
+                    {/* {p.featured && (
+                      <span className="inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                        Featured
+                      </span>
+                    )} */}
+                    <span className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-medium ${
+                      p.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {p.inStock ? 'In Stock' : 'Out of Stock'}
+                    </span>
+                  </div>
+                </td>
+                <td className="admin-td space-x-3">
+                  <button className="btn-secondary text-base px-4 py-2" onClick={(e) => { e.stopPropagation(); navigate(`/admin/products/${p.id}/edit`) }}>✏️ Edit</button>
+                  <button className="btn-danger text-base px-4 py-2" onClick={(e) => { e.stopPropagation(); setConfirm({ open: true, id: p.id, name: p.name }) }}>Delete</button>
                 </td>
               </tr>
             ))}

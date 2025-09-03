@@ -10,6 +10,7 @@ export default function AdminCategoryForm({ mode = 'create' }) {
   const isEdit = mode === 'edit'
   const [form, setForm] = useState({ name: '', slug: '', description: '' })
   const [saving, setSaving] = useState(false)
+  const [slugTouched, setSlugTouched] = useState(false)
 
   useEffect(() => {
     if (!isEdit) return
@@ -36,17 +37,20 @@ export default function AdminCategoryForm({ mode = 'create' }) {
   }
 
   return (
-    <div className="max-w-xl">
-      <h2 className="text-xl font-semibold">{isEdit ? 'Edit Category' : 'New Category'}</h2>
-      <form className="mt-4 space-y-4" onSubmit={submit}>
-        <FieldFloat id="name" label="Name" value={form.name} onChange={(v) => setForm({ ...form, name: v })} required />
-        <FieldFloat id="slug" label="Slug" value={form.slug} onChange={(v) => setForm({ ...form, slug: v })} />
-        <div>
-          <label className="block text-sm mb-1">Description</label>
-          <textarea className="w-full border rounded-lg px-3 py-2" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-        </div>
-        <button className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
-      </form>
+    <div className="w-full flex items-start justify-center">
+      <div className="w-full max-w-xl card p-5">
+        <button className="btn mb-3" type="button" onClick={() => window.history.back()}>← Back</button>
+        <h2 className="text-2xl font-semibold">{isEdit ? 'Edit Category' : 'New Category'}</h2>
+        <form className="mt-4 space-y-4" onSubmit={submit}>
+          <FieldFloat id="name" label="Name" value={form.name} onChange={(v) => setForm((prev) => ({ ...prev, name: v, slug: !isEdit && !slugTouched ? v.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : prev.slug }))} required />
+          <FieldFloat id="slug" label="Slug" value={form.slug} onChange={(v) => { setForm({ ...form, slug: v }); setSlugTouched(true) }} />
+          <FieldFloat as="textarea" rows={6} id="description" label="Description" value={form.description} onChange={(v) => setForm({ ...form, description: v })} />
+          <div className="flex items-center gap-2">
+            <button className="btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+            <button type="button" className="btn" onClick={() => navigate('/admin/categories')}>Cancel</button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }

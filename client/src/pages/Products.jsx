@@ -52,7 +52,7 @@ export default function Products() {
   return (
     <Layout>
       <main className="bg-slate-50 min-h-screen">
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <div className="max-w-screen-2xl mx-auto px-10 sm:px-6 lg:px-8 py-8 lg:py-12">
           {/* Header */}
           <div className="mb-8 pl-2">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
@@ -65,10 +65,10 @@ export default function Products() {
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* ── DESKTOP FILTER SIDEBAR ─────────────────────────────── */}
-            <aside className="hidden lg:block">
+            <aside className="hidden lg:block ">
               <form
                 onSubmit={(e) => { e.preventDefault(); applyFilters() }}
-                className="sticky top-24 space-y-6"
+                className="sticky top-24 space-y-6 rounded-2xl border border-gray-200 shadow-xs shadow-brand-300"
               >
                 <FilterCard title="Filters">
                   <Input

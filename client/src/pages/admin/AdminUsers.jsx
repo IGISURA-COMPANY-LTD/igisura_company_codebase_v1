@@ -48,26 +48,26 @@ export default function AdminUsers() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Users</h2>
+        <h2 className="text-2xl font-semibold">Users</h2>
         <Link to="/admin/users/new" className="btn-primary">Add User</Link>
       </div>
-      <div className="flex items-center justify-end gap-2">
-        <input aria-label="Search users" placeholder="Search" className="border rounded px-2 py-1 text-sm" value={filters.search} onChange={(e)=> setFilters({ ...filters, page: 1, search: e.target.value })} />
+      <div className="flex items-center justify-end gap-3">
+        <input aria-label="Search users" placeholder="Search users..." className="border rounded-lg px-4 py-2 text-base w-64" value={filters.search} onChange={(e)=> setFilters({ ...filters, page: 1, search: e.target.value })} />
       </div>
       <div className="admin-table-wrap">
         <table className="admin-table" role="table" aria-label="Users table">
           <thead>
             <tr className="admin-thead">
-              <th className="admin-th">ID</th>
               <th className="admin-th">Email</th>
               <th className="admin-th">Name</th>
               <th className="admin-th">Role</th>
+              <th className="admin-th">Joined</th>
               <th className="admin-th" aria-hidden></th>
             </tr>
           </thead>
           <tbody className="admin-tbody-zebra">
             {loading ? (
-              <tr><td colSpan="5" className="py-6 text-center">Loading...</td></tr>
+              <tr><td colSpan="5" className="py-4 text-center">Loading...</td></tr>
             ) : users.map((u) => (
               <tr
                 key={u.id}
@@ -76,13 +76,19 @@ export default function AdminUsers() {
                 onClick={() => navigate(`/admin/users/${u.id}`)}
                 onKeyDown={(e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); navigate(`/admin/users/${u.id}`) } }}
               >
-                <td className="admin-td">{u.id}</td>
-                <td className="admin-td">{u.email}</td>
-                <td className="admin-td">{u.name || '-'}</td>
-                <td className="admin-td">{u.role}</td>
-                <td className="admin-td space-x-2">
-                  <button className="btn" onClick={(e) => { e.stopPropagation(); navigate(`/admin/users/${u.id}`) }}>Edit</button>
-                  <button className="btn" onClick={(e) => { e.stopPropagation(); setConfirm({ open: true, id: u.id, name: u.email || u.name }) }}>Delete</button>
+                <td className="admin-td font-medium">{u.email}</td>
+                <td className="admin-td text-base">{u.name || '-'}</td>
+                <td className="admin-td">
+                  <span className={`inline-flex items-center px-2 py-2 rounded-full text-sm font-medium ${
+                    u.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {u.role}
+                  </span>
+                </td>
+                <td className="admin-td text-gray-600 text-base">{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}</td>
+                <td className="admin-td space-x-3">
+                  <button className="btn-secondary text-base px-4 py-1.5" onClick={(e) => { e.stopPropagation(); navigate(`/admin/users/${u.id}`) }}>Edit</button>
+                  <button className="btn-danger text-base px-4 py-1.5" onClick={(e) => { e.stopPropagation(); setConfirm({ open: true, id: u.id, name: u.email || u.name }) }}>Delete</button>
                 </td>
               </tr>
             ))}

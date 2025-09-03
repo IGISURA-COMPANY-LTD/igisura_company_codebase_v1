@@ -8,7 +8,7 @@ export default function ProductCard({ product }) {
   const to = `/product/${product.slug || product.id}`;
 
   return (
-    <article className="group relative flex flex-col rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+    <article className="group relative flex flex-col rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-300 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
       {/* Image area */}
       <div
         className="relative w-full aspect-square overflow-hidden rounded-t-2xl cursor-pointer"

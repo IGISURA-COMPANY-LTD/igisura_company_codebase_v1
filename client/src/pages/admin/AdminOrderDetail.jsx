@@ -2,17 +2,20 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import api from '../../lib/api'
+import ConfirmModal from '../../components/ui/ConfirmModal'
 
 export default function AdminOrderDetail() {
   const { id } = useParams()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
+  const [selectedStatus, setSelectedStatus] = useState('')
+  const [confirmChange, setConfirmChange] = useState({ open: false })
 
   const load = () => {
     setLoading(true)
     api.get(`/api/orders/${encodeURIComponent(id)}`)
-      .then(({ data }) => setOrder(data))
+      .then(({ data }) => { setOrder(data); setSelectedStatus(data?.status || '') })
       .catch((e) => {
         const msg = e?.response?.data?.error || e?.message || 'Failed to load order'
         console.log(msg)
@@ -46,8 +49,21 @@ export default function AdminOrderDetail() {
       <div className="card p-4">
         <button className="btn mb-3" onClick={() => window.history.back()}>← Back</button>
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Order #{order.id}</h2>
-          <div className="text-sm">{new Date(order.createdAt).toLocaleString()}</div>
+          <div>
+            <h2 className="text-2xl font-semibold">Order Details</h2>
+            <div className="text-sm text-gray-600 mt-1">Placed {order.createdAt ? new Date(order.createdAt).toLocaleString() : '-'}</div>
+          </div>
+          <div className="text-sm">
+            <span className="mr-2">Status:</span>
+            <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
+              order.status === 'NEW' ? 'bg-amber-100 text-amber-800' :
+              order.status === 'CONTACTED' ? 'bg-blue-100 text-blue-800' :
+              order.status === 'PAYMENT_CONFIRMED' ? 'bg-emerald-100 text-emerald-800' :
+              order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
+              order.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
+              'bg-gray-100 text-gray-800'
+            }`}>{order.status}</span>
+          </div>
         </div>
         <div className="mt-3 grid md:grid-cols-3 gap-4 text-sm">
           <div>
@@ -73,23 +89,23 @@ export default function AdminOrderDetail() {
         </div>
       </div>
 
-      <div className="card p-4 overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="admin-table-wrap">
+        <table className="admin-table" role="table" aria-label="Order items table">
           <thead>
-            <tr className="text-left text-gray-600">
-              <th className="py-2">Product</th>
-              <th>Price</th>
-              <th>Qty</th>
-              <th>Subtotal</th>
+            <tr className="admin-thead">
+              <th className="admin-th">Product</th>
+              <th className="admin-th">Price</th>
+              <th className="admin-th">Qty</th>
+              <th className="admin-th">Subtotal</th>
             </tr>
           </thead>
-          <tbody className="[&>tr:nth-child(even)]:bg-gray-50">
+          <tbody className="admin-tbody-zebra">
             {order.items?.map((i) => (
-              <tr key={i.productId} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="py-4">{i.product?.name || i.productId}</td>
-                <td className="py-4">${Number(i.price).toFixed(2)}</td>
-                <td className="py-4">{i.quantity}</td>
-                <td className="py-4">${(i.price * i.quantity).toFixed(2)}</td>
+              <tr key={i.productId} className="admin-tr">
+                <td className="admin-td">{i.product?.name || i.productId}</td>
+                <td className="admin-td">${Number(i.price).toFixed(2)}</td>
+                <td className="admin-td">{i.quantity}</td>
+                <td className="admin-td">${(i.price * i.quantity).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
@@ -98,17 +114,14 @@ export default function AdminOrderDetail() {
       </div>
 
       <div className="card p-4 flex items-center justify-between">
-        <div className="text-sm">Current status: <span className="font-medium">{order.status}</span></div>
-        <div className="flex items-center gap-2">
+        <div className="text-sm">Update order status</div>
+        <div className="flex items-center gap-3">
           <select
-            className="border rounded px-3 py-2"
-            defaultValue={order.status}
-            onChange={(e) => {
-              const next = e.target.value
-              const ok = window.confirm(`Are you sure you want to change order #${order.id} to '${next}'?`)
-              if (ok) updateStatus(next)
-            }}
+            className="border rounded-lg px-3 py-2 text-base"
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
             disabled={updating}
+            aria-label="Select new status"
           >
             <option value="NEW">NEW</option>
             <option value="CONTACTED">CONTACTED</option>
@@ -116,8 +129,24 @@ export default function AdminOrderDetail() {
             <option value="DELIVERED">DELIVERED</option>
             <option value="CANCELLED">CANCELLED</option>
           </select>
+          <button
+            className="btn-primary text-base px-5 py-2"
+            disabled={updating || selectedStatus === order.status}
+            onClick={() => setConfirmChange({ open: true })}
+          >
+            Change Status
+          </button>
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmChange.open}
+        title="Change order status?"
+        description={`Change status to '${selectedStatus}'? This action may update inventory or notifications.`}
+        confirmText={updating ? 'Updating...' : 'Confirm'}
+        onCancel={() => setConfirmChange({ open: false })}
+        onConfirm={async () => { setConfirmChange({ open: false }); await updateStatus(selectedStatus) }}
+      />
     </div>
   )
 }
