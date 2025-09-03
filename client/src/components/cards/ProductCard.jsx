@@ -1,57 +1,78 @@
-import { useNavigate } from 'react-router-dom'
-import useCartStore from '../../stores/cart'
-import { toast } from 'react-hot-toast'
+import { useNavigate } from 'react-router-dom';
+import useCartStore from '../../stores/cart';
+import { toast } from 'react-hot-toast';
 
 export default function ProductCard({ product }) {
-  const navigate = useNavigate()
-  const addItem = useCartStore((s) => s.addItem)
-  const to = `/product/${product.slug || product.id}`
+  const navigate = useNavigate();
+  const addItem = useCartStore((s) => s.addItem);
+  const to = `/product/${product.slug || product.id}`;
+
   return (
-    <div
-      className="relative group rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-transparent overflow-hidden"
-      role="article"
-    >
-      <button
+    <article className="group relative flex flex-col rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+      {/* Image area */}
+      <div
+        className="relative w-full aspect-square overflow-hidden rounded-t-2xl cursor-pointer"
         onClick={() => navigate(to)}
-        className="block w-full text-left"
-        aria-label={product.name}
       >
-        {/* Smaller visual weight: keep square but leave room for text by using padding frame */}
-        <div className="bg-gray-100 overflow-hidden">
-          <div className="aspect-square max-h-52 mx-auto">
-            {product.images?.[0] && (
-              <img
-                src={product.images[0]}
-                alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                loading="lazy"
-              />
-            )}
-          </div>
+        {product.images?.[0] ? (
+          <img
+            src={product.images[0]}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full bg-slate-100" />
+        )}
+      </div>
+
+      {/* Content area */}
+      <div className="flex-1 flex flex-col p-4">
+        <h3
+          className="font-semibold text-slate-900 text-base leading-tight truncate cursor-pointer"
+          onClick={() => navigate(to)}
+        >
+          {product.name}
+        </h3>
+
+        <p
+          className="mt-1 text-sm text-slate-600 line-clamp-2 cursor-pointer flex-1"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+          onClick={() => navigate(to)}
+        >
+          {product.description || ''}
+        </p>
+
+        <span className="mt-3 text-lg font-bold text-brand-600">
+          ${Number(product.price).toFixed(2)}
+        </span>
+
+        {/* Buttons — outside the link, fully clickable */}
+        <div className="mt-4 flex items-center gap-2">
+          <button
+            onClick={() => navigate(to)}
+            className="flex-1 text-center text-sm font-medium py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition"
+          >
+            See Details
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              addItem(product, 1);
+              toast.success('Added to cart');
+            }}
+            className="flex-none px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow hover:shadow-md active:scale-95 transition-all"
+          >
+            Add
+          </button>
         </div>
-        <div className="p-4">
-          <div className="font-semibold text-gray-900 truncate" title={product.name}>{product.name}</div>
-          <div className="mt-1 text-sm text-gray-600 relative">
-            <span
-              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-            >
-              {product.description || ''}
-            </span>
-          </div>
-          <div className="mt-2 flex items-center justify-between">
-            <a href={to} onClick={(e)=>{e.preventDefault(); navigate(to)}} className="text-xs text-brand-700 hover:underline">see more</a>
-            <div className="text-brand-700 font-semibold">${Number(product.price).toFixed(2)}</div>
-          </div>
-        </div>
-      </button>
-      <button
-        onClick={(e) => { e.stopPropagation(); addItem(product, 1); toast.success('Added to cart') }}
-        className="w-full px-4 py-3 text-white bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 active:from-brand-800 active:to-brand-800 transition-colors rounded-b-2xl font-medium"
-      >
-        Add to cart
-      </button>
-    </div>
-  )
+      </div>
+    </article>
+  );
 }
-
-

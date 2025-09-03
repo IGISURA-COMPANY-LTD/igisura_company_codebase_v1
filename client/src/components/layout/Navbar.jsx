@@ -132,7 +132,7 @@ export default function Navbar() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={() => setDrawerOpen(false)}
-        className="fixed inset-0 bg-black/60 z-40 md:hidden"
+        className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-2xl"
       />
 
       {/* drawer */}

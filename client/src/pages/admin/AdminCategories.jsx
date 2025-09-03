@@ -39,25 +39,27 @@ export default function AdminCategories() {
         <h2 className="text-xl font-semibold">Categories</h2>
         <Link to="/admin/categories/new" className="btn-primary">Add New Category</Link>
       </div>
-      <div className="card p-4 overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="admin-table-wrap">
+        <table className="admin-table" role="table" aria-label="Categories table">
           <thead>
-            <tr className="text-left text-gray-600">
-              <th className="py-2">Name</th>
-              <th>Slug</th>
-              <th>Products</th>
-              <th>Actions</th>
+            <tr className="admin-thead">
+              <th className="admin-th">Name</th>
+              <th className="admin-th">Slug</th>
+              <th className="admin-th">Products</th>
+              <th className="admin-th" aria-hidden>Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="admin-tbody-zebra">
             {loading ? (
               <tr><td colSpan="4" className="py-6 text-center">Loading...</td></tr>
             ) : categories.map((c) => (
-              <tr key={c.id} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="py-4">{c.name}</td>
-                <td className="py-4">{String(c.slug || '')}</td>
-                <td className="py-4">{c._count?.products ?? c.productsCount ?? '-'}</td>
-                <td className="space-x-2">
+              <tr key={c.id} className="admin-tr admin-tr-clickable" tabIndex={0}
+                  onClick={() => navigate(`/admin/categories/${c.id}/view`)}
+                  onKeyDown={(e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); navigate(`/admin/categories/${c.id}/view`) } }}>
+                <td className="admin-td">{c.name}</td>
+                <td className="admin-td">{String(c.slug || '')}</td>
+                <td className="admin-td">{c._count?.products ?? c.productsCount ?? '-'}</td>
+                <td className="admin-td space-x-2">
                   <button className="btn" onClick={() => navigate(`/admin/categories/${c.id}`)}>Edit</button>
                   <button className="btn" onClick={() => navigate(`/admin/categories/${c.id}/view`)}>View</button>
                   <a className="btn" href={`/products?category=${encodeURIComponent(String(c.slug || c.id))}`} target="_blank" rel="noreferrer">View Products</a>

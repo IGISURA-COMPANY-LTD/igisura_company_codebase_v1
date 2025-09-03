@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import ProductCard from '../components/cards/ProductCard'
 import api from '../lib/api'
-// If rc-slider is installed, uncomment the next line
 import 'rc-slider/assets/index.css'
 import Slider from 'rc-slider'
 
 export default function Products() {
-  const { products, pagination, filters, setFilter, setFilters, fetchProducts, loading } = useProductsStore()
+  /* ── 100 % ORIGINAL LOGIC ───────────────────────────────────────── */
+  const { products, pagination, filters, setFilter, setFilters, fetchProducts, loading } =
+    useProductsStore()
   const [categories, setCategories] = useState([])
   const [draft, setDraft] = useState({
     search: filters.search || '',
@@ -22,226 +23,417 @@ export default function Products() {
   })
   const gridRef = useRef(null)
 
-  // Load categories once
   useEffect(() => {
-    api.get('/api/categories').then(({ data }) => setCategories(Array.isArray(data) ? data : data?.categories || [])).catch(() => {})
+    api.get('/api/categories')
+      .then(({ data }) => setCategories(Array.isArray(data) ? data : data?.categories || []))
+      .catch(() => {})
   }, [])
 
-  // Fetch products when applied filters in store change (including page)
   useEffect(() => {
     fetchProducts().finally(() => {
-      if (gridRef.current) {
-        gridRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
+      gridRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
     })
-  }, [filters.page, filters.search, filters.category, filters.minPrice, filters.maxPrice, filters.sortBy, filters.sortOrder, filters.inStock])
+  }, [filters])
 
-  const applyFilters = () => {
-    setFilters({ ...draft, page: 1 })
-  }
-
+  const applyFilters = () => setFilters({ ...draft, page: 1 })
   const clearAll = () => {
-    const reset = { search: '', category: '', minPrice: '', maxPrice: '', inStock: false, sortBy: 'createdAt', sortOrder: 'desc' }
+    const reset = { search:'',category:'',minPrice:'',maxPrice:'',inStock:false,sortBy:'createdAt',sortOrder:'desc' }
     setDraft(reset)
     setFilters({ ...reset, page: 1 })
   }
 
-  // Price range config
   const minAllowed = 0
   const maxAllowed = 100000
   const minVal = Number(draft.minPrice || 0)
   const maxVal = Number(draft.maxPrice || maxAllowed)
+  /* ───────────────────────────────────────────────────────────────── */
 
+  /* ── STYLING ONLY BELOW ──────────────────────────────────────────── */
   return (
     <Layout>
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        <h1 className="text-2xl font-semibold">Shop</h1>
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-12 gap-6">
-          <aside className="md:col-span-3">
-            <div className="md:sticky md:top-20 card p-5 space-y-4 bg-white">
-              <div className="text-sm font-medium text-gray-700">Filters</div>
-              <input className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-0 focus:border-brand-600" placeholder="Search" value={draft.search} onChange={(e) => setDraft({ ...draft, search: e.target.value })} />
-              <select className="w-full border rounded-lg px-3 py-2" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })}>
-                <option value="">All Categories</option>
-                {categories.map((c) => <option key={c.id} value={c.slug || c.id}>{c.name}</option>)}
-              </select>
-              {/* Price range slider + inputs */}
-              <div className="space-y-2">
-                <div className="text-sm text-gray-700">Price range</div>
-                <Slider
-                  range
-                  min={minAllowed}
-                  max={maxAllowed}
-                  value={[minVal, maxVal]}
-                  onChange={(vals) => {
-                    const [min, max] = Array.isArray(vals) ? vals : [minVal, maxVal]
-                    setDraft({ ...draft, minPrice: min, maxPrice: max })
-                  }}
-                  allowCross={false}
-                  trackStyle={[{ backgroundColor: '#169361', height: 6 }]}
-                  handleStyle={[{ borderColor: '#169361' }, { borderColor: '#169361' }]}
-                  railStyle={{ backgroundColor: '#e5e7eb', height: 6 }}
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <input className="border rounded-lg px-3 py-2" placeholder="Min" value={draft.minPrice} onChange={(e) => {
-                    const v = Number(e.target.value || 0)
-                    const next = Math.min(Math.max(v, minAllowed), maxVal - 1)
-                    setDraft({ ...draft, minPrice: next })
-                  }} />
-                  <input className="border rounded-lg px-3 py-2" placeholder="Max" value={draft.maxPrice} onChange={(e) => {
-                    const v = Number(e.target.value || maxAllowed)
-                    const next = Math.max(Math.min(v, maxAllowed), minVal + 1)
-                    setDraft({ ...draft, maxPrice: next })
-                  }} />
-                </div>
-              </div>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={!!draft.inStock} onChange={(e) => setDraft({ ...draft, inStock: e.target.checked })} />
-                In Stock only
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <select className="border rounded-lg px-3 py-2" value={draft.sortBy} onChange={(e) => setDraft({ ...draft, sortBy: e.target.value })}>
-                  <option value="createdAt">Newest</option>
-                  <option value="price">Price</option>
-                  <option value="name">Name</option>
-                  <option value="rating">Rating</option>
-                </select>
-                <select className="border rounded-lg px-3 py-2" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: e.target.value })}>
-                  <option value="desc">Desc</option>
-                  <option value="asc">Asc</option>
-                </select>
-              </div>
-              <div className="flex gap-2 pt-2">
-                <button className="btn-primary flex-1 disabled:opacity-70" onClick={applyFilters} disabled={loading}>
-                  {loading ? 'Applying...' : 'Apply Filters'}
-                </button>
-                <button type="button" className="btn" onClick={clearAll} disabled={loading}>Clear All</button>
-              </div>
-            </div>
-          </aside>
-          <section className="md:col-span-9" ref={gridRef}>
-            {/* Active filters and count */}
-            <div className="flex items-center justify-between text-sm">
-              <div className="text-gray-600">Showing {pagination?.totalCount ?? products.length} products</div>
-              <div className="flex flex-wrap gap-2">
-                {filters.search && <span className="px-2 py-1 rounded bg-gray-100">Search: {filters.search}</span>}
-                {filters.category && <span className="px-2 py-1 rounded bg-gray-100">Category: {filters.category}</span>}
-                {(filters.minPrice || filters.maxPrice) && <span className="px-2 py-1 rounded bg-gray-100">Price: {filters.minPrice || 0} - {filters.maxPrice || '∞'}</span>}
-                {filters.inStock ? <span className="px-2 py-1 rounded bg-gray-100">In Stock</span> : null}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {loading ? (
-                Array.from({ length: pagination?.limit || 12 }).map((_, i) => (
-                  <div key={i} className="card p-4">
-                    <div className="skeleton h-44 rounded-xl" />
-                    <div className="skeleton h-4 w-2/3 mt-3 rounded" />
-                    <div className="skeleton h-4 w-1/3 mt-2 rounded" />
+      <main className="bg-slate-50 min-h-screen">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+          {/* Header */}
+          <div className="mb-8 pl-2">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+              Shop
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">
+              {pagination?.totalCount || products.length} products ready to ship
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* ── DESKTOP FILTER SIDEBAR ─────────────────────────────── */}
+            <aside className="hidden lg:block">
+              <form
+                onSubmit={(e) => { e.preventDefault(); applyFilters() }}
+                className="sticky top-24 space-y-6"
+              >
+                <FilterCard title="Filters">
+                  <Input
+                    placeholder="Search products..."
+                    value={draft.search}
+                    onChange={(e) => setDraft({ ...draft, search: e.target.value })}
+                  />
+
+                  <Select
+                    value={draft.category}
+                    onChange={(e) => setDraft({ ...draft, category: e.target.value })}
+                  >
+                    <option value="">All categories</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.slug || c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </Select>
+
+                  <div>
+                    <Label>Price range</Label>
+                    <Slider
+                      range
+                      min={minAllowed}
+                      max={maxAllowed}
+                      value={[minVal, maxVal]}
+                      onChange={(v) => {
+                        const [min, max] = Array.isArray(v) ? v : [minVal, maxVal]
+                        setDraft({ ...draft, minPrice: min, maxPrice: max })
+                      }}
+                      styles={{
+                        track: { background: '#e2e8f0', height: 4 },
+                        rail: { background: '#e2e8f0', height: 4 },
+                        handle: {
+                          borderColor: '#169361',
+                          background: '#fff',
+                          opacity: 1,
+                          width: 16,
+                          height: 16,
+                          marginTop: -6,
+                        },
+                        dot: { display: 'none' },
+                      }}
+                    />
+                    <div className="flex items-center gap-2 mt-3">
+                      <PriceInput
+                        value={draft.minPrice}
+                        onChange={(e) => {
+                          const v = Number(e.target.value || 0)
+                          const next = Math.min(Math.max(v, minAllowed), maxVal - 1)
+                          setDraft({ ...draft, minPrice: next })
+                        }}
+                      />
+                      <span className="text-slate-400">—</span>
+                      <PriceInput
+                        value={draft.maxPrice}
+                        onChange={(e) => {
+                          const v = Number(e.target.value || maxAllowed)
+                          const next = Math.max(Math.min(v, maxAllowed), minVal + 1)
+                          setDraft({ ...draft, maxPrice: next })
+                        }}
+                      />
+                    </div>
                   </div>
-                ))
-              ) : (
-                <AnimatePresence>
-                  {products.map((p) => (
-                    <motion.div key={p.id} layout initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.2 }}>
-                      <ProductCard product={p} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              )}
-            </div>
-            {/* Pagination */}
-            <div className="mt-6 flex items-center justify-between text-sm">
-              <div className="text-gray-600">Page {pagination?.currentPage || 1} of {pagination?.totalPages || 1}</div>
-              <div className="flex gap-2">
-                <button className="btn" disabled={!pagination?.hasPrev} onClick={() => setFilter('page', (filters.page || 1) - 1)}>Previous</button>
-                <button className="btn" disabled={!pagination?.hasNext} onClick={() => setFilter('page', (filters.page || 1) + 1)}>Next</button>
+
+                  <Checkbox
+                    id="instock"
+                    checked={draft.inStock}
+                    onChange={(e) => setDraft({ ...draft, inStock: e.target.checked })}
+                  >
+                    In stock only
+                  </Checkbox>
+                </FilterCard>
+
+                <FilterCard>
+                  <Label>Sort</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Select
+                      value={draft.sortBy}
+                      onChange={(e) => setDraft({ ...draft, sortBy: e.target.value })}
+                    >
+                      <option value="createdAt">Newest</option>
+                      <option value="price">Price</option>
+                      <option value="name">Name</option>
+                      <option value="rating">Rating</option>
+                    </Select>
+
+                    <Select
+                      value={draft.sortOrder}
+                      onChange={(e) => setDraft({ ...draft, sortOrder: e.target.value })}
+                    >
+                      <option value="desc">Desc</option>
+                      <option value="asc">Asc</option>
+                    </Select>
+                  </div>
+                </FilterCard>
+
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 btn-primary"
+                  >
+                    {loading ? 'Applying…' : 'Apply'}
+                  </button>
+                  <button type="button" onClick={clearAll} className="btn">
+                    Clear
+                  </button>
+                </div>
+              </form>
+            </aside>
+
+            {/* ── PRODUCT GRID ────────────────────────────────────────── */}
+            <section ref={gridRef} className="lg:col-span-3 pl-8">
+              {/* Active filter chips */}
+              <div className="mb-4 flex flex-wrap gap-2 text-xs">
+                {filters.search && <Chip>Search: {filters.search}</Chip>}
+                {filters.category && <Chip>Category: {filters.category}</Chip>}
+                {(filters.minPrice || filters.maxPrice) && (
+                  <Chip>
+                    ${filters.minPrice || 0} – ${filters.maxPrice || '∞'}
+                  </Chip>
+                )}
+                {filters.inStock && <Chip>In stock</Chip>}
               </div>
-            </div>
-          </section>
-        </div>
-      </div>
 
-      {/* Floating Filters button for mobile */}
-      <button
-        className="fixed md:hidden bottom-4 left-1/2 -translate-x-1/2 z-30 px-5 py-3 rounded-full shadow-lg bg-white text-gray-900 border border-gray-200"
-        onClick={() => setDraft({ ...draft, _mobileOpen: true })}
-        aria-label="Open filters"
-      >
-        Filters
-      </button>
+              {/* Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                {loading ? (
+                  Array.from({ length: pagination?.limit || 12 }).map((_, i) => (
+                    <SkeletonCard key={i} />
+                  ))
+                ) : (
+                  <AnimatePresence>
+                    {products.map((p) => (
+                      <motion.div
+                        key={p.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ProductCard product={p} />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                )}
+              </div>
 
-      {/* Bottom sheet for filters on mobile */}
-      {draft._mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-40">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setDraft({ ...draft, _mobileOpen: false })} />
-          <div className="absolute inset-x-0 bottom-0 bg-white rounded-t-2xl p-5 shadow-2xl max-h-[80vh] overflow-auto">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm font-medium">Filters</div>
-              <button className="size-8 rounded hover:bg-gray-100" onClick={() => setDraft({ ...draft, _mobileOpen: false })} aria-label="Close">✕</button>
-            </div>
-            <div className="space-y-4">
-              <input className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-0 focus:border-brand-600" placeholder="Search" value={draft.search} onChange={(e) => setDraft({ ...draft, search: e.target.value })} />
-              <select className="w-full border rounded-lg px-3 py-2" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })}>
-                <option value="">All Categories</option>
-                {categories.map((c) => <option key={c.id} value={c.slug || c.id}>{c.name}</option>)}
-              </select>
-              <div className="space-y-2">
-                <div className="text-sm text-gray-700">Price range</div>
-                <Slider
-                  range
-                  min={minAllowed}
-                  max={maxAllowed}
-                  value={[minVal, maxVal]}
-                  onChange={(vals) => {
-                    const [min, max] = Array.isArray(vals) ? vals : [minVal, maxVal]
-                    setDraft({ ...draft, minPrice: min, maxPrice: max })
-                  }}
-                  allowCross={false}
-                  trackStyle={[{ backgroundColor: '#169361', height: 6 }]}
-                  handleStyle={[{ borderColor: '#169361' }, { borderColor: '#169361' }]}
-                  railStyle={{ backgroundColor: '#e5e7eb', height: 6 }}
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <input className="border rounded-lg px-3 py-2" placeholder="Min" value={draft.minPrice} onChange={(e) => {
-                    const v = Number(e.target.value || 0)
-                    const next = Math.min(Math.max(v, minAllowed), maxVal - 1)
-                    setDraft({ ...draft, minPrice: next })
-                  }} />
-                  <input className="border rounded-lg px-3 py-2" placeholder="Max" value={draft.maxPrice} onChange={(e) => {
-                    const v = Number(e.target.value || maxAllowed)
-                    const next = Math.max(Math.min(v, maxAllowed), minVal + 1)
-                    setDraft({ ...draft, maxPrice: next })
-                  }} />
+              {/* Pagination */}
+              <div className="mt-10 flex items-center justify-between text-sm">
+                <span className="text-slate-600">
+                  Page {pagination?.currentPage || 1} of {pagination?.totalPages || 1}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    className="btn"
+                    disabled={!pagination?.hasPrev}
+                    onClick={() => setFilter('page', (filters.page || 1) - 1)}
+                  >
+                    Prev
+                  </button>
+                  <button
+                    className="btn"
+                    disabled={!pagination?.hasNext}
+                    onClick={() => setFilter('page', (filters.page || 1) + 1)}
+                  >
+                    Next
+                  </button>
                 </div>
               </div>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={!!draft.inStock} onChange={(e) => setDraft({ ...draft, inStock: e.target.checked })} />
-                In Stock only
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <select className="border rounded-lg px-3 py-2" value={draft.sortBy} onChange={(e) => setDraft({ ...draft, sortBy: e.target.value })}>
-                  <option value="createdAt">Newest</option>
-                  <option value="price">Price</option>
-                  <option value="name">Name</option>
-                  <option value="rating">Rating</option>
-                </select>
-                <select className="border rounded-lg px-3 py-2" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: e.target.value })}>
-                  <option value="desc">Desc</option>
-                  <option value="asc">Asc</option>
-                </select>
-              </div>
-              <div className="flex gap-2 pt-2">
-                <button className="btn-primary flex-1 disabled:opacity-70" onClick={() => { applyFilters(); setDraft({ ...draft, _mobileOpen: false }) }} disabled={loading}>
-                  {loading ? 'Applying...' : 'Apply'}
-                </button>
-                <button type="button" className="btn" onClick={clearAll} disabled={loading}>Clear</button>
-              </div>
-            </div>
+            </section>
           </div>
         </div>
-      )}
+
+        {/* ── MOBILE FILTER SHEET ──────────────────────────────────── */}
+        {draft._mobileOpen && (
+          <div className="lg:hidden fixed inset-0 z-50">
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setDraft({ ...draft, _mobileOpen: false })}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="absolute bottom-0 inset-x-0 bg-white rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-lg">Filters</h2>
+                <button
+                  onClick={() => setDraft({ ...draft, _mobileOpen: false })}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <Input
+                  placeholder="Search products..."
+                  value={draft.search}
+                  onChange={(e) => setDraft({ ...draft, search: e.target.value })}
+                />
+
+                <Select
+                  value={draft.category}
+                  onChange={(e) => setDraft({ ...draft, category: e.target.value })}
+                >
+                  <option value="">All categories</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.slug || c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </Select>
+
+                <div>
+                  <Label>Price range</Label>
+                  <Slider
+                    range
+                    min={minAllowed}
+                    max={maxAllowed}
+                    value={[minVal, maxVal]}
+                    onChange={(v) => {
+                      const [min, max] = Array.isArray(v) ? v : [minVal, maxVal]
+                      setDraft({ ...draft, minPrice: min, maxPrice: max })
+                    }}
+                    styles={{
+                      track: { background: '#e2e8f0', height: 4 },
+                      rail: { background: '#e2e8f0', height: 4 },
+                      handle: { borderColor: '#169361', background: '#fff', width: 16, height: 16 },
+                    }}
+                  />
+                  <div className="flex items-center gap-2 mt-3">
+                    <PriceInput
+                      value={draft.minPrice}
+                      onChange={(e) =>
+                        setDraft({ ...draft, minPrice: Number(e.target.value || 0) })
+                      }
+                    />
+                    <span className="text-slate-400">—</span>
+                    <PriceInput
+                      value={draft.maxPrice}
+                      onChange={(e) =>
+                        setDraft({ ...draft, maxPrice: Number(e.target.value || maxAllowed) })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <Checkbox
+                  checked={draft.inStock}
+                  onChange={(e) => setDraft({ ...draft, inStock: e.target.checked })}
+                >
+                  In stock only
+                </Checkbox>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Select
+                    value={draft.sortBy}
+                    onChange={(e) => setDraft({ ...draft, sortBy: e.target.value })}
+                  >
+                    <option value="createdAt">Newest</option>
+                    <option value="price">Price</option>
+                    <option value="name">Name</option>
+                    <option value="rating">Rating</option>
+                  </Select>
+
+                  <Select
+                    value={draft.sortOrder}
+                    onChange={(e) => setDraft({ ...draft, sortOrder: e.target.value })}
+                  >
+                    <option value="desc">Desc</option>
+                    <option value="asc">Asc</option>
+                  </Select>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    className="flex-1 btn-primary"
+                    onClick={() => {
+                      applyFilters()
+                      setDraft({ ...draft, _mobileOpen: false })
+                    }}
+                    disabled={loading}
+                  >
+                    {loading ? 'Applying…' : 'Apply'}
+                  </button>
+                  <button type="button" onClick={clearAll} className="btn">
+                    Clear
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* FAB to open mobile filters */}
+        <button
+          className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-30 px-5 py-3 bg-white/80 backdrop-blur shadow-xl rounded-full text-sm font-medium"
+          onClick={() => setDraft({ ...draft, _mobileOpen: true })}
+        >
+          Filters
+        </button>
+      </main>
     </Layout>
   )
 }
 
+/* ── ATOMIC COMPONENTS (only for styling) ────────────────────────── */
+const FilterCard = ({ title, children }) => (
+  <div className="bg-white/60 backdrop-blur-md border border-slate-200/50 rounded-2xl p-4 space-y-4 shadow-sm">
+    {title && <h3 className="font-semibold text-sm text-slate-700">{title}</h3>}
+    {children}
+  </div>
+)
 
+const Label = ({ children }) => (
+  <label className="block text-sm font-medium text-slate-700 mb-1">{children}</label>
+)
+
+const Input = (props) => (
+  <input
+    {...props}
+    className="w-full border border-slate-300/70 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/80"
+  />
+)
+
+const PriceInput = (props) => (
+  <input
+    {...props}
+    className="w-full text-center border border-slate-300/70 rounded-lg px-2 py-1.5 text-sm"
+  />
+)
+
+const Select = ({ children, ...props }) => (
+  <select
+    {...props}
+    className="w-full border border-slate-300/70 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/80"
+  >
+    {children}
+  </select>
+)
+
+const Checkbox = ({ children, ...props }) => (
+  <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+    <input type="checkbox" {...props} className="rounded text-brand-600 focus:ring-brand-500" />
+    {children}
+  </label>
+)
+
+const Chip = ({ children }) => (
+  <span className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-medium">
+    {children}
+  </span>
+)
+
+const SkeletonCard = () => (
+  <div className="rounded-2xl border border-slate-200 bg-white p-3 animate-pulse">
+    <div className="aspect-square bg-slate-200 rounded-xl" />
+    <div className="h-4 w-3/4 bg-slate-200 rounded mt-3" />
+    <div className="h-4 w-1/2 bg-slate-200 rounded mt-2" />
+  </div>
+)

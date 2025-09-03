@@ -30,10 +30,13 @@
   }
 }
 
-/* ---------- UTILITIES ---------- */
-/* @utility focus-ring {
-  @apply outline-none focus-visible:ring-2 focus-visible:ring-brand-500/80 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
-} */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 
 @utility btn {
   @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm
@@ -55,7 +58,6 @@
   @apply animate-pulse bg-gray-200/70;
 }
 
-/* ---------- NEW UTILITIES ---------- */
 @utility btn-primary-lg {
   @apply inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-semibold
          bg-brand-600 text-white shadow-md hover:bg-brand-700 hover:shadow-lg
@@ -72,10 +74,31 @@
   @apply text-brand-700 font-medium hover:underline;
 }
 
+@utility badge {
+  @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium;
+}
+@utility badge-green {
+  @apply bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200;
+}
+@utility badge-red {
+  @apply bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200;
+}
+
+
+@keyframes fly-to-cart {
+  0%   { transform: scale(1) translate(0,0); opacity: 1; }
+  100% { transform: scale(.12) translate(var(--tx),var(--ty)); opacity: 0; }
+}
+
+
+@supports (backdrop-filter: blur(10px)) {
+  .bg-white\/60 {
+    backdrop-filter: blur(12px) saturate(180%);
+  }
+}
+
 /* ---------- MICRO-ANIMATIONS ---------- */
 
-
-/* hover-lift for cards */
 .card-hover-lift {
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
@@ -86,6 +109,34 @@
 
 /* ---------- modern product-card (home page only) ---------- */
 @layer components {
+  /* ---------- admin table utilities ---------- */
+  .admin-table-wrap {
+    @apply card p-4 overflow-x-auto;
+  }
+  .admin-table {
+    @apply w-full text-sm;
+  }
+  .admin-thead {
+    @apply text-left text-gray-600;
+  }
+  .admin-tr {
+    @apply border-b border-gray-200;
+  }
+  .admin-tr-clickable {
+    @apply cursor-pointer hover:bg-gray-50 focus:bg-gray-50 outline-none;
+  }
+  .admin-td, .admin-th {
+    @apply py-3 px-2 align-middle;
+  }
+  .admin-tbody-zebra > tr:nth-child(even) {
+    @apply bg-gray-50;
+  }
+  .admin-pagination {
+    @apply flex items-center justify-between text-sm py-2;
+  }
+  .admin-pagination .pager {
+    @apply flex gap-2;
+  }
   .nav-landing {
     @apply text-white;
   }
@@ -116,5 +167,24 @@
   .hero-full {
     @apply h-dvh;
   }
-   
+
+  .nav-landing .md\:hidden {  
+    @apply text-white;
+  }
+  .nav-scrolled .md\:hidden {  
+    @apply text-gray-900;
+  }
+
+/* ---------- qty-picker ---------- */
+.qty-picker {
+  @apply inline-flex items-center rounded-xl border border-gray-300 bg-white shadow-sm;
 }
+.qty-picker > button {
+  @apply h-10 w-10 flex items-center justify-center text-xl text-gray-700
+         hover:bg-gray-100 active:bg-gray-200 transition-colors;
+}
+.qty-picker > input {
+  @apply w-14 text-center text-lg font-bold bg-transparent outline-none;
+}
+}
+

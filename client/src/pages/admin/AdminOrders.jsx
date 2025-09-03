@@ -24,7 +24,7 @@ export default function AdminOrders() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Orders</h2>
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2 text-sm" role="group" aria-label="Order filters">
           <select className="border rounded px-2 py-1" value={filters.status} onChange={(e) => setFilters({ ...filters, page: 1, status: e.target.value })}>
             <option value="">All Statuses</option>
             <option value="NEW">NEW</option>
@@ -35,29 +35,31 @@ export default function AdminOrders() {
           </select>
         </div>
       </div>
-      <div className="card p-4 overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="admin-table-wrap">
+        <table className="admin-table" role="table" aria-label="Orders table">
           <thead>
-            <tr className="text-left text-gray-600">
-              <th className="py-2">ID</th>
-              <th>Customer</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Total</th>
-              <th></th>
+            <tr className="admin-thead">
+              <th className="admin-th">ID</th>
+              <th className="admin-th">Customer</th>
+              <th className="admin-th">Date</th>
+              <th className="admin-th">Status</th>
+              <th className="admin-th">Total</th>
+              <th className="admin-th" aria-hidden></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="admin-tbody-zebra">
             {loading ? (
               <tr><td colSpan="6" className="py-6 text-center">Loading...</td></tr>
             ) : orders.map((o) => (
               <tr
                 key={o.id}
-                className="border-t hover:bg-gray-50 cursor-pointer"
+                className="admin-tr admin-tr-clickable"
+                tabIndex={0}
                 onClick={() => window.location.assign(`/admin/orders/${o.id}`)}
+                onKeyDown={(e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); window.location.assign(`/admin/orders/${o.id}`) } }}
               >
-                <td className="py-2">{o.id}</td>
-                <td className="whitespace-nowrap">
+                <td className="admin-td">{o.id}</td>
+                <td className="admin-td whitespace-nowrap">
                   <div className="flex items-center gap-2">
                     <span>{o.user?.name || o.user?.email}</span>
                     {o.phoneNumber ? (
@@ -65,10 +67,10 @@ export default function AdminOrders() {
                     ) : null}
                   </div>
                 </td>
-                <td>{o.createdAt ? new Date(o.createdAt).toLocaleString() : '-'}</td>
-                <td>{String(o.status || '')}</td>
-                <td className="font-semibold">${(Array.isArray(o.items) ? o.items.reduce((s,i)=>s+Number(i.price)*Number(i.quantity),0) : 0).toFixed(2)}</td>
-                <td>
+                <td className="admin-td">{o.createdAt ? new Date(o.createdAt).toLocaleString() : '-'}</td>
+                <td className="admin-td">{String(o.status || '')}</td>
+                <td className="admin-td font-semibold">${(Array.isArray(o.items) ? o.items.reduce((s,i)=>s+Number(i.price)*Number(i.quantity),0) : 0).toFixed(2)}</td>
+                <td className="admin-td">
                   <Link className="btn" to={`/admin/orders/${o.id}`} onClick={(e)=>e.stopPropagation()}>View</Link>
                 </td>
               </tr>
@@ -76,9 +78,9 @@ export default function AdminOrders() {
           </tbody>
         </table>
       </div>
-      <div className="flex items-center justify-between text-sm">
+      <div className="admin-pagination" role="navigation" aria-label="Orders pagination">
         <div>Page {pagination?.currentPage || filters.page} of {pagination?.totalPages || '-'}</div>
-        <div className="flex gap-2">
+        <div className="pager">
           <button className="btn" disabled={!pagination?.hasPrev} onClick={() => setFilters({ ...filters, page: (filters.page || 1) - 1 })}>Previous</button>
           <button className="btn" disabled={!pagination?.hasNext} onClick={() => setFilters({ ...filters, page: (filters.page || 1) + 1 })}>Next</button>
         </div>
