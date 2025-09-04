@@ -69,10 +69,15 @@ export const getAllBlogPosts = async (req, res) => {
 export const getBlogPost = async (req, res) => {
   try {
     const { idOrSlug } = req.params;
-    const isNumeric = /^\d+$/.test(idOrSlug);
 
+    // Support lookup by either UUID id or slug in a single query
     const post = await prisma.blogPost.findFirst({
-      where: isNumeric ? { id: idOrSlug} : { slug: idOrSlug }
+      where: {
+        OR: [
+          { id: idOrSlug },
+          { slug: idOrSlug }
+        ]
+      }
     });
 
     if (!post) {

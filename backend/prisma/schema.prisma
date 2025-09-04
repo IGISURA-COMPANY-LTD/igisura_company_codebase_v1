@@ -112,7 +112,7 @@ model BlogPost {
   slug      String   @unique
   content   String
   author    String
-  image     String[]
+  images    String[]  @map("image")
   tags      String[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

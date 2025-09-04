@@ -42,20 +42,23 @@ export default function AdminOverview() {
                 <stop offset="0%" stopColor={color} stopOpacity={0.25} />
                 <stop offset="100%" stopColor={color} stopOpacity={0} />
               </linearGradient>
+              <filter id={`shadow-${color}`} height="150%" x="-20%" y="-20%" width="140%">
+                <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor={color} floodOpacity="0.18" />
+              </filter>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+            <CartesianGrid strokeDasharray="2 4" stroke="#cbd5e1" vertical={true} />
             <XAxis
               dataKey="name"
               tick={{ fontSize: 11, fill: '#6b7280' }}
-              tickLine={false}
-              axisLine={false}
+              tickLine={{ stroke: '#e5e7eb' }}
+              axisLine={{ stroke: '#d1d5db' }}
               tickMargin={8}
               interval="preserveStartEnd"
             />
             <YAxis
               tickFormatter={valueFormatter}
-              axisLine={false}
-              tickLine={false}
+              axisLine={{ stroke: '#d1d5db' }}
+              tickLine={{ stroke: '#e5e7eb' }}
               tick={{ fontSize: 11, fill: '#6b7280' }}
               width={52}
             />
@@ -64,7 +67,7 @@ export default function AdminOverview() {
               contentStyle={{ borderRadius: '0.5rem', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,.06)' }}
               formatter={(v) => [valueFormatter(v), null]}
             />
-            <Area type="monotone" dataKey="value" stroke={color} strokeWidth={2} fill={`url(#grad-${color})`} />
+            <Area type="monotone" dataKey="value" stroke={color} strokeWidth={2} fill={`url(#grad-${color})`} filter={`url(#shadow-${color})`} />
           </AreaChart>
         </ResponsiveContainer>
       )}
@@ -91,11 +94,11 @@ export default function AdminOverview() {
 
       {/* Charts */}
       <div className="grid md:grid-cols-2 gap-7">
-        <div className="card card-hover-lift p-6">
+        <div className="card card-hover-lift p-6 border border-gray-300">
           <h3 className="font-semibold text-gray-900 mb-4">Revenue (last 12 months)</h3>
           <Chart series={revenue} color="#16a34a" valueFormatter={formatCurrency} />
         </div>
-        <div className="card card-hover-lift p-6">
+        <div className="card card-hover-lift p-8 border border-gray-300">
           <h3 className="font-semibold text-gray-900 mb-4">Orders (last 12 months)</h3>
           <Chart series={orders} color="#2563eb" valueFormatter={formatCompact} />
         </div>
