@@ -101,10 +101,10 @@ export default function Products() {
                         setDraft({ ...draft, minPrice: min, maxPrice: max })
                       }}
                       styles={{
-                        track: { background: '#e2e8f0', height: 4 },
-                        rail: { background: '#e2e8f0', height: 4 },
+                        tracks: { background: '#fffff', height: 4 , },
+                        rail: { background: '#ffffff', height: 4,  },
                         handle: {
-                          borderColor: '#169361',
+                          borderColor: '#107351',
                           background: '#fff',
                           opacity: 1,
                           width: 16,

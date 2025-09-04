@@ -15,7 +15,7 @@ export default function BlogList() {
           {posts.map((p) => (
             <a key={p.id} href={`/blog/${p.slug || p.id}`} className="card p-4">
               <div className="aspect-[16/10] rounded-xl bg-gray-100 overflow-hidden">
-                {p.image && <img src={p.image} alt={p.title} className="w-full h-full object-cover" />}
+                {p.images?.[0] && <img src={p.images[0]} alt={p.title} className="w-full h-full object-cover" />}
               </div>
               <div className="mt-3 font-medium">{p.title}</div>
               <div className="text-sm text-gray-600">{p.author}</div>

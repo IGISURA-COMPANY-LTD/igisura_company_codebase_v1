@@ -87,7 +87,7 @@ export const getBlogPost = async (req, res) => {
 
 export const createBlogPost = async (req, res) => {
   try {
-    const { title, slug, content, author, image, tags = [] } = req.body;
+    const { title, slug, content, author, images, tags = [] } = req.body;
 
     const generatedSlug = slug || title.toLowerCase()
       .replace(/\s+/g, '-')
@@ -101,7 +101,7 @@ export const createBlogPost = async (req, res) => {
         slug: generatedSlug,
         content,
         author,
-        image,
+        images: Array.isArray(images) ? images : (images ? [images] : []),
         tags
       }
     });
@@ -118,7 +118,7 @@ export const createBlogPost = async (req, res) => {
 export const updateBlogPost = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, slug, content, author, image, tags } = req.body;
+    const { title, slug, content, author, images, tags } = req.body;
 
     const existingPost = await prisma.blogPost.findUnique({
       where: { id: id }
@@ -134,15 +134,12 @@ export const updateBlogPost = async (req, res) => {
       .replace(/-+/g, '-')
       .trim('-') : undefined);
 
-    // If a new image is provided and there was an existing one, delete the old one
-    if (image !== undefined && existingPost.image && existingPost.image !== image) {
-      try {
-        const publicId = existingPost.image.split('/').pop().split('.')[0];
-        const fullPublicId = `igisura/blog/${publicId}`;
-        await cloudinary.uploader.destroy(fullPublicId);
-      } catch (e) {
-        // ignore deletion errors
-      }
+    // If new images are provided, delete all previous images
+    let imagesToDelete = [];
+    let nextImages = existingPost.images || [];
+    if (images !== undefined) {
+      imagesToDelete = [...(existingPost.images || [])];
+      nextImages = Array.isArray(images) ? images : [images];
     }
 
     const post = await prisma.blogPost.update({
@@ -152,10 +149,20 @@ export const updateBlogPost = async (req, res) => {
         ...(slug !== undefined && { slug: generatedSlug }),
         ...(content && { content }),
         ...(author && { author }),
-        ...(image !== undefined && { image }),
+        ...(images !== undefined && { images: nextImages }),
         ...(tags !== undefined && { tags })
       }
     });
+
+    if (imagesToDelete.length > 0) {
+      try {
+        const deleteIds = imagesToDelete.map((url) => {
+          const publicId = url.split('/').pop().split('.')[0];
+          return `igisura/blog/${publicId}`;
+        });
+        await Promise.all(deleteIds.map((pid) => cloudinary.uploader.destroy(pid)));
+      } catch (e) {}
+    }
 
     return res.status(200).json(post);
   } catch (error) {
@@ -178,16 +185,16 @@ export const deleteBlogPost = async (req, res) => {
       return res.status(404).json({ error: 'Blog post not found' });
     }
 
-    // delete cover image if present
+    // delete images if present
     try {
-      if (post.image) {
-        const publicId = post.image.split('/').pop().split('.')[0];
-        const fullPublicId = `igisura/blog/${publicId}`;
-        await cloudinary.uploader.destroy(fullPublicId);
+      if (Array.isArray(post.images) && post.images.length > 0) {
+        const deleteIds = post.images.map((url) => {
+          const publicId = url.split('/').pop().split('.')[0];
+          return `igisura/blog/${publicId}`;
+        });
+        await Promise.all(deleteIds.map((pid) => cloudinary.uploader.destroy(pid)));
       }
-    } catch (e) {
-      // ignore deletion errors
-    }
+    } catch (e) {}
 
     await prisma.blogPost.delete({
       where: { id: id }
@@ -223,6 +230,18 @@ export const uploadBlogImage = async (req, res) => {
       return res.status(400).json({ error: 'No image uploaded' });
     }
     return res.json({ image: req.file.path });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const uploadBlogImages = async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'No images uploaded' });
+    }
+    const urls = req.files.map((f) => f.path);
+    return res.json({ images: urls });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

@@ -34,7 +34,7 @@ model Product {
   slug        String   @unique
   description String
   price       Float
-  category    Category @relation(fields: [categoryId], references: [id])
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   categoryId  String
   images      String[]
   benefits    String
@@ -64,7 +64,7 @@ model Category {
 
 model Order {
   id           String         @id @default(uuid())
-  customer     User        @relation(fields: [userId], references: [id])
+  customer     User        @relation(fields: [userId], references: [id], onDelete: Restrict)
   userId       String
   items        OrderItem[]
   total        Float
@@ -82,9 +82,9 @@ model Order {
 
 model OrderItem {
   id        String     @id @default(uuid())
-  order     Order   @relation(fields: [orderId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId   String
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
   productId String
   quantity  Int
   price     Float
@@ -94,9 +94,9 @@ model OrderItem {
 
 model Review {
   id        String      @id @default(uuid())
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
   userId    String
   rating    Int
   comment   String?
@@ -112,7 +112,7 @@ model BlogPost {
   slug      String   @unique
   content   String
   author    String
-  image     String?
+  image     String[]
   tags      String[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -11,8 +11,8 @@ import {
 import { adminAuth } from '../middleware/auth.js';
 import validate from '../middleware/validation.js';
 import { blogSchema, blogQuerySchema } from '../validations/index.js';
-import { uploadBlogImage, handleUploadErrors, processUploadedBlogImage } from '../middleware/upload.js';
-import { uploadBlogImage as uploadHandler } from '../controllers/blog.controller.js';
+import { uploadBlogImage, uploadBlogImages, handleUploadErrors, processUploadedBlogImage, processUploadedBlogImages } from '../middleware/upload.js';
+import { uploadBlogImage as uploadHandler, uploadBlogImages as uploadManyHandler } from '../controllers/blog.controller.js';
 
 const router = express.Router();
 
@@ -28,6 +28,14 @@ router.post('/upload-image',
   handleUploadErrors,
   processUploadedBlogImage,
   uploadHandler
+);
+
+router.post('/upload-images', 
+  adminAuth,
+  uploadBlogImages,
+  handleUploadErrors,
+  processUploadedBlogImages,
+  uploadManyHandler
 );
 
 router.post('/', adminAuth, validate(blogSchema), createBlogPost);

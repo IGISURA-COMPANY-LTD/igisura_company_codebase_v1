@@ -39,10 +39,10 @@ export default function AdminBlog() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Blog</h2>
-        <Link to="/admin/blog/new" className="btn-primary text-lg px-6 py-3">New Post</Link>
-      </div>
-      <div className="flex items-center justify-end gap-3">
-        <input aria-label="Search posts" placeholder="Search posts..." className="border rounded-lg px-4 py-2 text-base w-64" value={filters.search} onChange={(e)=> setFilters({ ...filters, page: 1, search: e.target.value })} />
+        <div className="flex items-center gap-3">
+          <Link to="/admin/blog/new" className="btn-primary">New Post</Link>
+          <input aria-label="Search posts" placeholder="Search posts..." className="border rounded-lg px-4 py-2 text-base w-64" value={filters.search} onChange={(e)=> setFilters({ ...filters, page: 1, search: e.target.value })} />
+        </div>
       </div>
       <div className="admin-table-wrap">
         <table className="admin-table" role="table" aria-label="Blog posts table">

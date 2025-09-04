@@ -1,154 +1,137 @@
-import { useEffect, useState } from 'react'
-import api from '../../lib/api'
-import { Link } from 'react-router-dom'
+// pages/admin/AdminOverview.jsx
+import { useEffect, useState } from 'react';
+import api from '../../lib/api';
+import { Link } from 'react-router-dom';
+import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 
 export default function AdminOverview() {
-  const [stats, setStats] = useState(null)
-  const [revenue, setRevenue] = useState(null)
-  const [orders, setOrders] = useState(null)
+  const [stats, setStats]   = useState(null);
+  const [revenue, setRevenue] = useState(null);
+  const [orders, setOrders]  = useState(null);
 
   useEffect(() => {
-    api.get('/api/admin/dashboard/stats').then(({ data }) => setStats(data)).catch(() => {})
-    api.get('/api/admin/dashboard/revenue-trend').then(({ data }) => setRevenue(data?.series || [])).catch(() => {})
-    api.get('/api/admin/dashboard/orders-trend').then(({ data }) => setOrders(data?.series || [])).catch(() => {})
-  }, [])
+    api.get('/api/admin/dashboard/stats').then(({ data }) => setStats(data)).catch(() => {});
+    api.get('/api/admin/dashboard/revenue-trend').then(({ data }) => setRevenue(data?.series || [])).catch(() => {});
+    api.get('/api/admin/dashboard/orders-trend').then(({ data }) => setOrders(data?.series || [])).catch(() => {});
+  }, []);
 
-  const MiniLineChart = ({ data, height = 120, color = '#2563eb' }) => {
-    if (!Array.isArray(data) || data.length === 0) {
-      return <div className="h-[120px] bg-gray-50 rounded" />
-    }
-    const width = 520
-    const padding = 24
-    const values = data.map(d => Number(d.value) || 0)
-    const labels = data.map(d => d.label)
-    const max = Math.max(...values, 1)
-    const min = Math.min(...values, 0)
-    const range = Math.max(max - min, 1)
-    const stepX = (width - padding * 2) / Math.max(values.length - 1, 1)
-    const points = values.map((v, i) => {
-      const x = padding + i * stepX
-      const y = padding + (height - padding * 2) * (1 - (v - min) / range)
-      return `${x},${y}`
-    }).join(' ')
-    return (
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-[160px]">
-        <defs>
-          <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.35" />
-            <stop offset="100%" stopColor={color} stopOpacity="0.02" />
-          </linearGradient>
-        </defs>
-        <polyline fill="none" stroke="#e5e7eb" strokeWidth="1" points={`${padding},${height - padding} ${width - padding},${height - padding}`} />
-        <polyline fill="none" stroke="#e5e7eb" strokeWidth="1" points={`${padding},${padding} ${width - padding},${padding}`} />
-        <polyline fill="none" stroke={color} strokeWidth="2.5" points={points} />
-        <polygon fill="url(#grad)" points={`${points} ${width - padding},${height - padding} ${padding},${height - padding}`} />
-        {values.map((v, i) => {
-          const x = padding + i * stepX
-          const y = padding + (height - padding * 2) * (1 - (v - min) / range)
-          return <circle key={i} cx={x} cy={y} r="2.5" fill={color} />
-        })}
-        <g>
-          {labels.map((l, i) => {
-            if (i % 2 !== 0) return null
-            const x = padding + i * stepX
-            const y = height - 6
-            return <text key={l} x={x} y={y} fontSize="10" textAnchor="middle" fill="#6b7280">{l.split('-')[1]}</text>
-          })}
-        </g>
-      </svg>
-    )
-  }
-  return (
-    <div className="grid grid-cols-1 gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Overview</h1>
-          <p className="text-gray-500 mt-1">Key metrics and recent activity</p>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        {[
-          ['totalRevenue','Revenue'],
-          ['totalOrders','Orders'],
-          ['totalProducts','Products'],
-          ['pendingOrders','Pending Orders'],
-          ['totalUsers','Users'],
-        ].map(([k, label]) => (
-          <div key={k} className="rounded-xl border bg-white shadow-sm p-5">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">{label}</div>
-              <div className="text-gray-300">★</div>
-            </div>
-            <div className="text-3xl font-semibold mt-2">{stats ? (stats[k] ?? '-') : <span className="skeleton inline-block h-7 w-24 rounded" />}</div>
-          </div>
-        ))}
-      </div>
+  const formatCompact  = (v) => new Intl.NumberFormat('en-US', { notation: 'compact' }).format(Number(v) || 0);
+  const formatCurrency = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(v) || 0);
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="rounded-xl border bg-white shadow-sm p-5">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-medium">Revenue (last 12 months)</div>
-          </div>
-          {!revenue ? (
-            <div className="h-[160px] skeleton rounded mt-2" />
-          ) : (
-            <MiniLineChart data={revenue} color="#16a34a" />
-          )}
-        </div>
-        <div className="rounded-xl border bg-white shadow-sm p-5">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-medium">Orders (last 12 months)</div>
-          </div>
-          {!orders ? (
-            <div className="h-[160px] skeleton rounded mt-2" />
-          ) : (
-            <MiniLineChart data={orders} color="#2563eb" />
-          )}
-        </div>
+  const MetricCard = ({ label, value }) => (
+    <div className="card p-5 flex flex-col justify-between">
+      <div className="text-sm text-gray-600 mb-1">{label}</div>
+      <div className="text-3xl font-bold text-gray-900">
+        {value ?? <span className="skeleton h-8 w-20 rounded-md inline-block" />}
       </div>
-
-      {(Array.isArray(stats?.lowStockProducts) && stats.lowStockProducts.length > 0) ||
-       (Array.isArray(stats?.recentOrders) && stats.recentOrders.length > 0) ? (
-        <div className="grid md:grid-cols-2 gap-6">
-          {Array.isArray(stats?.lowStockProducts) && stats.lowStockProducts.length > 0 && (
-            <div className="rounded-xl border bg-white shadow-sm p-5">
-              <div className="text-sm font-medium">Low Stock Products</div>
-              <ul className="mt-2 space-y-2 text-sm">
-                {stats.lowStockProducts.slice(0, 6).map((p) => (
-                  <li key={p.id} className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <span className="inline-block size-8 rounded bg-gray-100" />
-                      <span className={p.stockQuantity <= 5 ? 'text-red-600 font-medium' : ''}>{p.name} ({p.stockQuantity})</span>
-                    </span>
-                    <Link className="btn" to={`/admin/products/${p.id}`}>Edit</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {Array.isArray(stats?.recentOrders) && stats.recentOrders.length > 0 && (
-            <div className="rounded-xl border bg-white shadow-sm p-5">
-              <div className="text-sm font-medium">Recent Orders</div>
-              <ul className="mt-2 space-y-2 text-sm">
-                {stats.recentOrders.slice(0, 6).map((o) => (
-                  <li key={o.id} className="flex items-center justify-between">
-                    <span>#{o.id} — {o.user?.email} <span className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs ${
-                      o.status === 'NEW' ? 'bg-amber-100 text-amber-800' :
-                      o.status === 'CONTACTED' ? 'bg-blue-100 text-blue-800' :
-                      o.status === 'PAYMENT_CONFIRMED' ? 'bg-emerald-100 text-emerald-800' :
-                      o.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>{o.status}</span></span>
-                    <Link className="btn" to={`/admin/orders/${o.id}`}>View</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      ) : null}
     </div>
-  )
+  );
+
+  const Chart = ({ series, color = '#16a34a', valueFormatter = formatCompact }) => (
+    <div className="h-60 w-full">
+      {!Array.isArray(series) || series.length === 0 ? (
+        <div className="skeleton h-full rounded-lg" />
+      ) : (
+        <ResponsiveContainer>
+          <AreaChart
+            data={series.map(d => ({ name: d.label?.split('-')[1] || d.label, value: Number(d.value) || 0 }))}
+            margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+          >
+            <defs>
+              <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={color} stopOpacity={0.25} />
+                <stop offset="100%" stopColor={color} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6b7280' }} tickLine={false} axisLine={false} />
+            <YAxis tickFormatter={valueFormatter} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6b7280' }} />
+            <Tooltip
+              cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '3 3' }}
+              contentStyle={{ borderRadius: '0.5rem', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,.06)' }}
+              formatter={(v) => [valueFormatter(v), null]}
+            />
+            <Area type="monotone" dataKey="value" stroke={color} strokeWidth={2} fill={`url(#grad-${color})`} />
+          </AreaChart>
+        </ResponsiveContainer>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto flex flex-col gap-8">
+      <header>
+        <h1 className="text-3xl font-bold text-gray-900">Overview</h1>
+        <p className="text-gray-500 mt-1">Key metrics and recent activity</p>
+      </header>
+
+      {/* KPI row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <MetricCard label="Revenue" value={stats && formatCurrency(stats.totalRevenue)} />
+        <MetricCard label="Orders" value={stats && formatCompact(stats.totalOrders)} />
+        <MetricCard label="Products" value={stats && formatCompact(stats.totalProducts)} />
+        <MetricCard label="Pending Orders" value={stats && formatCompact(stats.pendingOrders)} />
+        <MetricCard label="Users" value={stats && formatCompact(stats.totalUsers)} />
+      </div>
+
+      {/* Charts */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="card p-5">
+          <h3 className="font-semibold text-gray-900 mb-3">Revenue (last 12 months)</h3>
+          <Chart series={revenue} color="#16a34a" valueFormatter={formatCurrency} />
+        </div>
+        <div className="card p-5">
+          <h3 className="font-semibold text-gray-900 mb-3">Orders (last 12 months)</h3>
+          <Chart series={orders} color="#2563eb" valueFormatter={formatCompact} />
+        </div>
+      </div>
+
+      {/* Lists */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {stats?.lowStockProducts?.length > 0 && (
+          <div className="card p-5">
+            <h3 className="font-semibold text-gray-900 mb-3">Low Stock Products</h3>
+            <ul className="space-y-3">
+              {stats.lowStockProducts.slice(0, 6).map(p => (
+                <li key={p.id} className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-lg bg-gray-100 shrink-0" />
+                    <span className={p.stockQuantity <= 5 ? 'text-red-600 font-medium' : ''}>
+                      {p.name} ({p.stockQuantity})
+                    </span>
+                  </div>
+                  <Link to={`/admin/products/${p.id}`} className="btn-link">Edit</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {stats?.recentOrders?.length > 0 && (
+          <div className="card p-5">
+            <h3 className="font-semibold text-gray-900 mb-3">Recent Orders</h3>
+            <ul className="space-y-3">
+              {stats.recentOrders.slice(0, 6).map(o => (
+                <li key={o.id} className="flex items-center justify-between gap-3">
+                  <div>
+                    <span className="font-medium">#{o.id}</span> — {o.user?.email}
+                    <span
+                      className={`ml-2 badge ${o.status === 'NEW' ? 'bg-amber-100 text-amber-800' :
+                          o.status === 'CONTACTED' ? 'bg-blue-100 text-blue-800' :
+                          o.status === 'PAYMENT_CONFIRMED' ? 'bg-emerald-100 text-emerald-800' :
+                          o.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
+                          'bg-gray-100 text-gray-800'}`}
+                    >
+                      {o.status}
+                    </span>
+                  </div>
+                  <Link to={`/admin/orders/${o.id}`} className="btn-link">View</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
-
-

@@ -16,7 +16,7 @@ export default function BlogPost() {
           <article>
             <h1 className="text-3xl font-semibold">{post.title}</h1>
             <div className="text-sm text-gray-600 mt-1">By {post.author}</div>
-            {post.image && <img src={post.image} alt="" className="mt-6 rounded-xl" />}
+            {post.images?.[0] && <img src={post.images[0]} alt="" className="mt-6 rounded-xl" />}
             <div className="prose mt-6" dangerouslySetInnerHTML={{ __html: post.content }} />
           </article>
         )}

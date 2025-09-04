@@ -90,7 +90,10 @@ export const blogSchema = Joi.object({
   slug: Joi.string().optional(),
   content: Joi.string().required(),
   author: Joi.string().required(),
-  image: Joi.string().uri().optional(),
+  images: Joi.alternatives().try(
+    Joi.array().items(Joi.string().uri()),
+    Joi.any().strip() // This allows the field to be present but not validated when files are uploaded
+  ).optional(),
   tags: Joi.array().items(Joi.string()).optional()
 });
 

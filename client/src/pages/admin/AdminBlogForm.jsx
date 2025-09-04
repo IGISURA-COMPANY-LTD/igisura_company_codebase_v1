@@ -8,7 +8,7 @@ export default function AdminBlogForm({ mode = 'create' }) {
   const { id } = useParams()
   const navigate = useNavigate()
   const isEdit = mode === 'edit'
-  const [form, setForm] = useState({ title: '', slug: '', content: '', author: '', image: '', tags: '' })
+  const [form, setForm] = useState({ title: '', slug: '', content: '', author: '', images: [], tags: '' })
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef(null)
@@ -16,19 +16,19 @@ export default function AdminBlogForm({ mode = 'create' }) {
 
   useEffect(() => {
     if (!isEdit) return
-    api.get(`/api/blog/${id}`).then(({ data }) => setForm({ title: data.title || '', slug: data.slug || '', content: data.content || '', author: data.author || '', image: data.image || '', tags: Array.isArray(data.tags) ? data.tags.join(', ') : '' })).catch(() => toast.error('Failed to load post'))
+    api.get(`/api/blog/${id}`).then(({ data }) => setForm({ title: data.title || '', slug: data.slug || '', content: data.content || '', author: data.author || '', images: Array.isArray(data.images) ? data.images : (data.images ? [data.images] : []), tags: Array.isArray(data.tags) ? data.tags.join(', ') : '' })).catch(() => toast.error('Failed to load post'))
   }, [id])
 
-  const uploadCover = async (file) => {
-    if (!file) return
+  const uploadImages = async (files) => {
+    if (!files || files.length === 0) return
     const body = new FormData()
-    body.append('image', file)
+    Array.from(files).slice(0, 5).forEach((f) => body.append('images', f))
     try {
       setUploading(true)
-      const { data } = await api.post('/api/blog/upload-image', body, { headers: { 'Content-Type': 'multipart/form-data' } })
-      const url = data.image
-      setForm((f) => ({ ...f, image: url }))
-      toast.success('Image uploaded')
+      const { data } = await api.post('/api/blog/upload-images', body, { headers: { 'Content-Type': 'multipart/form-data' } })
+      const urls = data.images || []
+      setForm((f) => ({ ...f, images: [...(f.images || []), ...urls] }))
+      toast.success('Images uploaded')
     } catch (e) {
       toast.error(e?.response?.data?.error || 'Upload failed')
     } finally {
@@ -37,8 +37,8 @@ export default function AdminBlogForm({ mode = 'create' }) {
     }
   }
 
-  const removeCover = () => {
-    setForm((f) => ({ ...f, image: '' }))
+  const removeImage = (url) => {
+    setForm((f) => ({ ...f, images: (f.images || []).filter((u) => u !== url) }))
   }
 
   const submit = async (e) => {
@@ -77,20 +77,22 @@ export default function AdminBlogForm({ mode = 'create' }) {
         </div>
         <div className="md:col-span-2">
           <div className="flex items-center justify-between">
-            <label className="block text-sm">Cover Image</label>
-            <input ref={fileRef} type="file" accept="image/*" onChange={(e) => uploadCover(e.target.files?.[0])} />
+            <label className="block text-sm">Images</label>
+            <input ref={fileRef} type="file" multiple accept="image/*" onChange={(e) => uploadImages(e.target.files)} />
           </div>
           <div className={`mt-3 border-2 border-dashed rounded-lg p-4 ${uploading ? 'opacity-70' : ''}`}
             onDragOver={(e) => { e.preventDefault() }}
-            onDrop={(e) => { e.preventDefault(); if (e.dataTransfer.files?.[0]) uploadCover(e.dataTransfer.files[0]) }}
+            onDrop={(e) => { e.preventDefault(); uploadImages(e.dataTransfer.files) }}
           >
-            <div className="text-gray-600">Drag & drop an image here, or click above to select a file.</div>
-            {form.image && (
-              <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-3">
-                <div className="relative rounded-lg overflow-hidden bg-gray-100 aspect-[1200/630] group">
-                  <img src={form.image} alt="cover" className="w-full h-full object-cover" />
-                  <button type="button" className="absolute top-1 right-1 bg-white/90 text-xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition" onClick={removeCover}>×</button>
-                </div>
+            <div className="text-gray-600">Drag & drop images here, or click above to select files.</div>
+            {Array.isArray(form.images) && form.images.length > 0 && (
+              <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+                {form.images.map((url) => (
+                  <div key={url} className="relative rounded-lg overflow-hidden bg-gray-100 aspect-[4/3] group">
+                    <img src={url} alt="uploaded" className="w-full h-full object-cover" />
+                    <button type="button" className="absolute top-1 right-1 bg-white/90 text-xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition" onClick={() => removeImage(url)}>×</button>
+                  </div>
+                ))}
               </div>
             )}
           </div>

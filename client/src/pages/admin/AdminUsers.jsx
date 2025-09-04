@@ -49,10 +49,10 @@ export default function AdminUsers() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Users</h2>
-        <Link to="/admin/users/new" className="btn-primary">Add User</Link>
-      </div>
-      <div className="flex items-center justify-end gap-3">
-        <input aria-label="Search users" placeholder="Search users..." className="border rounded-lg px-4 py-2 text-base w-64" value={filters.search} onChange={(e)=> setFilters({ ...filters, page: 1, search: e.target.value })} />
+        <div className="flex items-center gap-3">
+          <Link to="/admin/users/new" className="btn-primary">Add User</Link>
+          <input aria-label="Search users" placeholder="Search users..." className="border rounded-lg px-4 py-2 text-base w-64" value={filters.search} onChange={(e)=> setFilters({ ...filters, page: 1, search: e.target.value })} />
+        </div>
       </div>
       <div className="admin-table-wrap">
         <table className="admin-table" role="table" aria-label="Users table">
