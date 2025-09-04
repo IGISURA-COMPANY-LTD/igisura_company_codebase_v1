@@ -12,7 +12,7 @@ export default function BlogPost() {
   const containerRef = useRef(null)
 
   useEffect(() => {
-    api.get(`/api/blog/slug/${slug}`).then(({ data }) => setPost(data)).catch(() => {})
+    api.get(`/api/blog/${slug}`).then(({ data }) => setPost(data)).catch(() => {})
   }, [slug])
 
   const images = useMemo(() => (post?.images && Array.isArray(post.images) ? post.images : []), [post])
