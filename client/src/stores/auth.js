@@ -9,11 +9,29 @@ export const useAuthStore = create((set, get) => ({
   loading: false,
   error: null,
 
+  _isTokenExpired(token) {
+    try {
+      const parts = token.split('.')
+      if (parts.length !== 3) return true
+      const payload = JSON.parse(atob(parts[1]))
+      if (!payload?.exp) return true
+      const nowInSeconds = Math.floor(Date.now() / 1000)
+      return payload.exp <= nowInSeconds
+    } catch {
+      return true
+    }
+  },
+
   hydrate() {
     try {
       const raw = localStorage.getItem('auth')
       if (!raw) return
       const parsed = JSON.parse(raw)
+      if (!parsed?.token || get()._isTokenExpired(parsed.token)) {
+        localStorage.removeItem('auth')
+        set({ user: null, token: null, isAuthenticated: false, isAdmin: false })
+        return
+      }
       set({
         user: parsed.user || null,
         token: parsed.token || null,

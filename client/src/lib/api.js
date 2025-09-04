@@ -28,8 +28,15 @@ api.interceptors.response.use(
   (error) => {
     const status = error?.response?.status
     if (status === 401) {
-      // Optionally clear invalid token
-      // localStorage.removeItem('auth')
+      try {
+        localStorage.removeItem('auth')
+      } catch {}
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname + window.location.search
+        if (!currentPath.startsWith('/login')) {
+          window.location.replace(`/login?next=${encodeURIComponent(currentPath)}`)
+        }
+      }
     }
     return Promise.reject(error)
   },

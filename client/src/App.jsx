@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
 import useAuthStore from './stores/auth'
 import Layout from './components/layout/Layout'
@@ -41,6 +42,41 @@ const ProtectedRoute = ({ requireAdmin }) => {
   return <Outlet />
 }
 
+const GuestRoute = () => {
+  const { isAuthenticated, isAdmin, hydrate } = useAuthStore()
+  if (!isAuthenticated && typeof window !== 'undefined') {
+    hydrate()
+  }
+  if (isAuthenticated) {
+    return <Navigate to={isAdmin ? '/admin' : '/'} replace />
+  }
+  return <Outlet />
+}
+
+const HomeOrAdmin = () => {
+  const { isAuthenticated, isAdmin, hydrate } = useAuthStore()
+  if (!isAuthenticated && typeof window !== 'undefined') {
+    hydrate()
+  }
+  if (isAuthenticated && isAdmin) {
+    return <Navigate to="/admin" replace />
+  }
+  return <HomePage />
+}
+
+const AuthBoot = () => {
+  const { hydrate, isAuthenticated, fetchProfile } = useAuthStore()
+  useEffect(() => {
+    hydrate()
+  }, [])
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchProfile().catch(() => {})
+    }
+  }, [isAuthenticated])
+  return null
+}
+
  
 
 
@@ -59,7 +95,7 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <motion.div key={location.pathname} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
         <Routes location={location}>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<HomeOrAdmin />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/product/:slug" element={<ProductDetailPage />} />
           <Route path="/about" element={<AboutPage />} />
@@ -92,8 +128,10 @@ function AnimatedRoutes() {
               <Route path="users/:id" element={<AdminUserDetail />} />
             </Route>
           </Route>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route element={<GuestRoute />}> 
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </motion.div>
@@ -105,6 +143,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Toaster position="top-right" />
+      <AuthBoot />
       <AnimatedRoutes />
     </BrowserRouter>
   )

@@ -19,7 +19,7 @@ export default function AdminOverview() {
   const formatCurrency = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(v) || 0);
 
   const MetricCard = ({ label, value }) => (
-    <div className="card p-5 flex flex-col justify-between">
+    <div className="card card-hover-lift border border-gray-300 p-6 flex flex-col justify-between transition-all">
       <div className="text-sm text-gray-600 mb-1">{label}</div>
       <div className="text-3xl font-bold text-gray-900">
         {value ?? <span className="skeleton h-8 w-20 rounded-md inline-block" />}
@@ -28,14 +28,14 @@ export default function AdminOverview() {
   );
 
   const Chart = ({ series, color = '#16a34a', valueFormatter = formatCompact }) => (
-    <div className="h-60 w-full">
+    <div className="h-64 w-full">
       {!Array.isArray(series) || series.length === 0 ? (
         <div className="skeleton h-full rounded-lg" />
       ) : (
         <ResponsiveContainer>
           <AreaChart
             data={series.map(d => ({ name: d.label?.split('-')[1] || d.label, value: Number(d.value) || 0 }))}
-            margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+            margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
           >
             <defs>
               <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
@@ -44,8 +44,21 @@ export default function AdminOverview() {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6b7280' }} tickLine={false} axisLine={false} />
-            <YAxis tickFormatter={valueFormatter} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6b7280' }} />
+            <XAxis
+              dataKey="name"
+              tick={{ fontSize: 11, fill: '#6b7280' }}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              interval="preserveStartEnd"
+            />
+            <YAxis
+              tickFormatter={valueFormatter}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: '#6b7280' }}
+              width={52}
+            />
             <Tooltip
               cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '3 3' }}
               contentStyle={{ borderRadius: '0.5rem', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,.06)' }}
@@ -59,14 +72,16 @@ export default function AdminOverview() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto flex flex-col gap-8">
-      <header>
-        <h1 className="text-3xl font-bold text-gray-900">Overview</h1>
-        <p className="text-gray-500 mt-1">Key metrics and recent activity</p>
+    <div className="max-w-7xl mx-auto flex flex-col gap-10 px-6 py-8 md:py-10 min-h-screen">
+      <header className="flex items-end justify-between">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Overview</h1>
+          <p className="text-gray-500 mt-1">Key metrics and recent activity</p>
+        </div>
       </header>
 
       {/* KPI row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
         <MetricCard label="Revenue" value={stats && formatCurrency(stats.totalRevenue)} />
         <MetricCard label="Orders" value={stats && formatCompact(stats.totalOrders)} />
         <MetricCard label="Products" value={stats && formatCompact(stats.totalProducts)} />
@@ -75,27 +90,27 @@ export default function AdminOverview() {
       </div>
 
       {/* Charts */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="card p-5">
-          <h3 className="font-semibold text-gray-900 mb-3">Revenue (last 12 months)</h3>
+      <div className="grid md:grid-cols-2 gap-7">
+        <div className="card card-hover-lift p-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Revenue (last 12 months)</h3>
           <Chart series={revenue} color="#16a34a" valueFormatter={formatCurrency} />
         </div>
-        <div className="card p-5">
-          <h3 className="font-semibold text-gray-900 mb-3">Orders (last 12 months)</h3>
+        <div className="card card-hover-lift p-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Orders (last 12 months)</h3>
           <Chart series={orders} color="#2563eb" valueFormatter={formatCompact} />
         </div>
       </div>
 
       {/* Lists */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-7">
         {stats?.lowStockProducts?.length > 0 && (
-          <div className="card p-5">
-            <h3 className="font-semibold text-gray-900 mb-3">Low Stock Products</h3>
-            <ul className="space-y-3">
+          <div className="card card-hover-lift p-6">
+            <h3 className="font-semibold text-gray-900 mb-4">Low Stock Products</h3>
+            <ul className="space-y-2.5">
               {stats.lowStockProducts.slice(0, 6).map(p => (
-                <li key={p.id} className="flex items-center justify-between gap-3">
+                <li key={p.id} className="flex items-center justify-between gap-3 py-1.5">
                   <div className="flex items-center gap-3">
-                    <div className="size-8 rounded-lg bg-gray-100 shrink-0" />
+                    <div className="size-9 rounded-lg bg-gray-100 shrink-0" />
                     <span className={p.stockQuantity <= 5 ? 'text-red-600 font-medium' : ''}>
                       {p.name} ({p.stockQuantity})
                     </span>
@@ -108,11 +123,11 @@ export default function AdminOverview() {
         )}
 
         {stats?.recentOrders?.length > 0 && (
-          <div className="card p-5">
-            <h3 className="font-semibold text-gray-900 mb-3">Recent Orders</h3>
-            <ul className="space-y-3">
+          <div className="card card-hover-lift p-6">
+            <h3 className="font-semibold text-gray-900 mb-4">Recent Orders</h3>
+            <ul className="space-y-2.5">
               {stats.recentOrders.slice(0, 6).map(o => (
-                <li key={o.id} className="flex items-center justify-between gap-3">
+                <li key={o.id} className="flex items-center justify-between gap-3 py-1.5">
                   <div>
                     <span className="font-medium">#{o.id}</span> — {o.user?.email}
                     <span
