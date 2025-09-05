@@ -113,13 +113,13 @@ export default function Checkout() {
               {items.map(({ product, quantity }) => (
                 <div key={product.id} className="flex justify-between text-sm">
                   <span>{product.name} × {quantity}</span>
-                  <span>${(product.price * quantity).toFixed(2)}</span>
+                  <span>{(product.price * quantity).toFixed(2)} RWF</span>
                 </div>
               ))}
             </div>
-            <div className="mt-4 flex justify-between font-medium"><span>Subtotal</span><span>${total().toFixed(2)}</span></div>
-            <div className="mt-1 flex justify-between text-sm text-gray-600"><span>Estimated Shipping</span><span>$0.00</span></div>
-            <div className="mt-2 flex justify-between font-semibold"><span>Estimated Total</span><span>${total().toFixed(2)}</span></div>
+            <div className="mt-4 flex justify-between font-medium"><span>Subtotal</span><span>{total().toFixed(2)} RWF</span></div>
+            <div className="mt-1 flex justify-between text-sm text-gray-600"><span>Estimated Shipping</span><span> 0.00 RWF</span></div>
+            <div className="mt-2 flex justify-between font-semibold"><span>Estimated Total</span><span>{total().toFixed(2)} RWF</span></div>
           </div>
         </div>
       </div>

@@ -37,7 +37,10 @@ const ProtectedRoute = ({ requireAdmin }) => {
   if (!isAuthenticated && typeof window !== 'undefined') {
     hydrate()
   }
-  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (!isAuthenticated) {
+    const next = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/'
+    return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />
+  }
   if (requireAdmin && !isAdmin) return <Navigate to="/" replace />
   return <Outlet />
 }

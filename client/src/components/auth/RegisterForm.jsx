@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import useAuthStore from '../../stores/auth'
 
@@ -8,6 +8,7 @@ const validateEmail = (value) => /.+@.+\..+/.test(value)
 
 export default function RegisterForm() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { register, loading, error } = useAuthStore()
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [touched, setTouched] = useState({})
@@ -32,8 +33,11 @@ export default function RegisterForm() {
     try {
       const data = await register(form)
       toast.success('Account created!')
-      if (data?.user?.role === 'ADMIN') navigate('/admin')
-      else navigate('/')
+      const search = new URLSearchParams(location.search)
+      const next = search.get('next')
+      if (next) navigate(next, { replace: true })
+      else if (data?.user?.role === 'ADMIN') navigate('/admin', { replace: true })
+      else navigate('/', { replace: true })
     } catch (e) {
       setApiError(e?.response?.data?.error || 'Registration failed')
     }

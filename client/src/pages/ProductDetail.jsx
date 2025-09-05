@@ -138,7 +138,7 @@ export default function ProductDetail() {
               </div>
 
               <p className="mt-4 text-3xl font-bold text-gray-900">
-                ${Number(product.price).toFixed(2)}
+                {Number(product.price).toFixed(2)} RWF
               </p>
 
               {/* collapsible text */}

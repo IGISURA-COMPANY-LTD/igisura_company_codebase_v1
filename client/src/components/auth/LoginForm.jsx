@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import useAuthStore from '../../stores/auth'
 
@@ -8,6 +8,7 @@ const validateEmail = (value) => /.+@.+\..+/.test(value)
 
 export default function LoginForm() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { login, loading, error } = useAuthStore()
   const [form, setForm] = useState({ email: '', password: '' })
   const [touched, setTouched] = useState({})
@@ -31,8 +32,11 @@ export default function LoginForm() {
     try {
       const data = await login(form)
       toast.success('Welcome back!')
-      if (data?.user?.role === 'ADMIN') navigate('/admin')
-      else navigate('/')
+      const search = new URLSearchParams(location.search)
+      const next = search.get('next')
+      if (next) navigate(next, { replace: true })
+      else if (data?.user?.role === 'ADMIN') navigate('/admin', { replace: true })
+      else navigate('/', { replace: true })
     } catch (e) {
       setApiError(e?.response?.data?.error || 'Login failed')
     }

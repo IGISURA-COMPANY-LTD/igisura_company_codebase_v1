@@ -24,7 +24,7 @@ export default function Cart() {
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">{product.name}</div>
-                    <div className="text-sm text-gray-600">${Number(product.price).toFixed(2)}</div>
+                    <div className="text-sm text-gray-600">{Number(product.price).toFixed(2)} RWF</div>
                     <div className="text-xs mt-1 text-gray-500">{outOfStock ? 'Out of stock' : `In stock: ${maxStock}`}</div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -44,7 +44,7 @@ export default function Cart() {
               )})}
             </div>
             <div className="card p-4">
-              <div className="flex justify-between font-medium"><span>Subtotal</span><span>${total().toFixed(2)}</span></div>
+              <div className="flex justify-between font-medium"><span>Subtotal</span><span>{total().toFixed(2)} RWF</span></div>
               <Link
                 to="/checkout"
                 onClick={(e) => { if (items.length === 0) { e.preventDefault(); toast('Your cart is empty.') } }}

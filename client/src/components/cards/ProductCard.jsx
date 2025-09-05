@@ -49,7 +49,7 @@ export default function ProductCard({ product }) {
         </p>
 
         <span className="mt-3 text-lg font-bold text-brand-600">
-          ${Number(product.price).toFixed(2)}
+          {Number(product.price).toFixed(2)} RWF
         </span>
 
         {/* Buttons — outside the link, fully clickable */}
