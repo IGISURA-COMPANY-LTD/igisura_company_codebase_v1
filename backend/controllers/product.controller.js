@@ -1,4 +1,5 @@
 import prisma from '../config/database.js';
+import { cloudinary } from '../config/cloudinary.js';
 
 const deleteCloudinaryImages = async (imageUrls) => {
   try {
@@ -290,9 +291,16 @@ export const updateProduct = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    const newStockQuantity = quantityChange !== undefined
-      ? (parseInt(existingProduct.stockQuantity ?? 0) + parseInt(quantityChange))
-      : undefined;
+    let newStockQuantity = undefined;
+    if (quantityChange !== undefined) {
+      const current = Math.trunc(parseFloat(existingProduct.stockQuantity ?? 0));
+      const delta = Math.trunc(parseFloat(quantityChange));
+      if (Number.isNaN(delta)) {
+        return res.status(400).json({ error: 'quantityChange must be a number' });
+      }
+      newStockQuantity = current + delta;
+      if (newStockQuantity < 0) newStockQuantity = 0;
+    }
 
 
     let category;

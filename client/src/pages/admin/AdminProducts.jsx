@@ -78,7 +78,7 @@ export default function AdminProducts() {
                     {/* <div className="text-sm text-gray-500">{p.slug}</div> */}
                   </div>
                 </td>
-                <td className="admin-td font-semibold text-brand-700 text-lg">${Number(p.price).toFixed(2)}</td>
+                <td className="admin-td font-semibold text-brand-700 text-lg">{Number(p.price).toFixed(2)} RWF</td>
                 <td className={`admin-td text-base ${p.stockQuantity <= 5 ? 'text-red-600 font-medium' : ''}`}>
                   {p.stockQuantity ?? (p.inStock ? 'In stock' : 'Out')}
                 </td>

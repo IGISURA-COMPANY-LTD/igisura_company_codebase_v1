@@ -20,7 +20,7 @@ export default function Home() {
   const addItem = useCartStore((s) => s.addItem)
 
   useEffect(() => {
-    fetchFeatured(4)
+    fetchFeatured(3)
     let alive = true
     setLoadingPosts(true)
     api.get('/api/blog', { params: { limit: 2 } }).then(({ data }) => {
@@ -100,39 +100,43 @@ export default function Home() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.15 } } }}
-              className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4 justify-items-center"
+              className="mt-14 grid grid-cols-1 md:grid-cols-3 justify-items-center"
             >
-              {(featured || []).slice(0, 3).map((p, i) => (
-                <motion.div
-                  key={p.id}
-                  variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0 } }}
-                  transition={{ duration: 0.4, ease: 'easeOut' }}
-                  className="group home-product-card"
-                >
-                  <Link to={`/product/${p.slug || p.id}`}>
-                    <img src={p.images?.[0]} alt={p.name} />
-                  </Link>
-
-                  <div className="body">
+              {Array.isArray(featured) && featured.length > 0 ? (
+                featured.slice(0, 3).map((p, i) => (
+                  <motion.div
+                    key={p.id}
+                    variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0 } }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                    className="home-product-card"
+                  >
                     <Link to={`/product/${p.slug || p.id}`}>
-                      <h3 className="font-semibold text-gray-900 truncate">{p.name}</h3>
+                      <img src={p.images?.[0]} alt={p.name} />
                     </Link>
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                      {p.benefits ? String(p.benefits).split(/\.|\n/)[0] : 'Natural wellness, simply.'}
-                    </p>
-                    <div className="flex items-center justify-between mt-3">
-                      <span className="price">${typeof p.price === 'number' ? Number(p.price).toFixed(2) : '0.00'}</span>
+
+                    <div className="body">
+                      <Link to={`/product/${p.slug || p.id}`}>
+                        <h3 className="font-semibold text-gray-900 truncate">{p.name}</h3>
+                      </Link>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        {p.benefits ? String(p.benefits).split(/\.|\n/)[0] : 'Natural wellness, simply.'}
+                      </p>
+                      <div className="flex items-center justify-between mt-3">
+                        <span className="price">{typeof p.price === 'number' ? Number(p.price).toFixed(2) : '0.00'} RWF</span>
+                      </div>
+                      <button
+                        className="add-btn"
+                        onClick={() => addItem(p, 1)}
+                        aria-label={`Add ${p.name} to cart`}
+                      >
+                        Add to Cart
+                      </button>
                     </div>
-                    <button
-                      className="add-btn"
-                      onClick={() => addItem(p, 1)}
-                      aria-label={`Add ${p.name} to cart`}
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))
+              ) : (
+                <p className="text-gray-600 col-span-full">No products yet.</p>
+              )}
             </motion.div>
 
             <div className="text-center mt-12">

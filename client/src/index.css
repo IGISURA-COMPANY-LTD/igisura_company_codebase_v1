@@ -161,9 +161,9 @@
     @apply text-gray-900;
   }
   .home-product-card {
-    @apply relative rounded-2xl bg-white border border-gray-200 shadow-sm overflow-hidden
-           transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
-            @apply w-72;               
+    @apply relative rounded-2xl bg-white border border-gray-300 shadow-sm overflow-hidden
+           transition-all duration-300 hover:shadow-lg drop-shadow-brand-800 hover:-translate-y-1;
+            @apply w-65;               
             ;         
   }
   .home-product-card img {

@@ -18,6 +18,7 @@ export default function AdminProductForm({ mode = 'create' }) {
   })
   const [slugTouched, setSlugTouched] = useState(false)
   const fileRef = useRef(null)
+  const initialStockRef = useRef(0)
 
   useEffect(() => {
     api.get('/api/categories').then(({ data }) => setCategories(Array.isArray(data) ? data : data?.categories || [])).catch(() => {})
@@ -26,13 +27,20 @@ export default function AdminProductForm({ mode = 'create' }) {
   useEffect(() => {
     if (!isEdit) return
     api.get(`/api/products/${id}`)
-      .then(({ data }) => setForm({
-        name: data.name || '', slug: data.slug || '', description: data.description || '', price: data.price || '',
-        categoryId: data.categoryId || '', benefits: data.benefits || '', instructions: data.instructions || '',
-        inStock: !!data.inStock, featured: !!data.featured, stockQuantity: data.stockQuantity ?? '', images: data.images || [],
-      }))
+      .then(({ data }) => {
+        const loadedStock = data.stockQuantity ?? ''
+        // capture initial stock immediately to ensure correct delta math
+        initialStockRef.current = Number(loadedStock || 0)
+        setForm({
+          name: data.name || '', slug: data.slug || '', description: data.description || '', price: data.price || '',
+          categoryId: data.categoryId || '', benefits: data.benefits || '', instructions: data.instructions || '',
+          inStock: !!data.inStock, featured: !!data.featured, stockQuantity: loadedStock, images: data.images || [],
+        })
+      })
       .catch(() => toast.error('Failed to load product'))
   }, [id])
+
+  // remove separate effect to avoid resetting initial stock later
 
   const uploadImages = async (files) => {
     if (!files || files.length === 0) return
@@ -60,18 +68,29 @@ export default function AdminProductForm({ mode = 'create' }) {
     e.preventDefault()
     try {
       setSaving(true)
-      const payload = {
+      const basePayload = {
         ...form,
         price: Number(form.price),
         // Category ID must be sent as a string per new API schema
         categoryId: form.categoryId ? String(form.categoryId) : undefined,
-        stockQuantity: form.stockQuantity === '' ? undefined : Number(form.stockQuantity),
       }
       if (isEdit) {
-        await api.put(`/api/products/${id}`, payload)
+        const hasNewStock = form.stockQuantity !== '' && form.stockQuantity !== undefined
+        const newStockNumber = hasNewStock ? Number(form.stockQuantity) : undefined
+        const delta = hasNewStock ? (Math.trunc(newStockNumber || 0) - Math.trunc(Number(initialStockRef.current) || 0)) : undefined
+        const { stockQuantity, ...rest } = basePayload
+        const updatePayload = {
+          ...rest,
+          ...(hasNewStock && delta !== 0 ? { quantityChange: delta } : {}),
+        }
+        await api.put(`/api/products/${id}`, updatePayload)
         toast.success('Product updated')
       } else {
-        await api.post('/api/products', payload)
+        const createPayload = {
+          ...basePayload,
+          stockQuantity: form.stockQuantity === '' ? undefined : Number(form.stockQuantity),
+        }
+        await api.post('/api/products', createPayload)
         toast.success('Product created')
       }
       navigate('/admin/products')

@@ -53,7 +53,7 @@ export default function AdminCategoryDetail() {
               {p.images?.[0] && <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />}
             </div>
             <div className="mt-2 font-medium truncate">{p.name}</div>
-            <div className="text-sm text-gray-600">${Number(p.price).toFixed(2)}</div>
+            <div className="text-sm text-gray-600">{Number(p.price).toFixed(2)} RWF</div>
           </div>
         ))}
         {products.length === 0 && <div className="text-gray-600 col-span-full">No products found for this category.</div>}

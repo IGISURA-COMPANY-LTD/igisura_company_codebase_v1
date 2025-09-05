@@ -58,7 +58,7 @@ export default function AdminProductDetail() {
               <span className="text-gray-600">Category: <span className="font-medium">{product.category?.name || '-'}</span></span>
               <span className="text-gray-500">SKU: <span className="font-mono">{product.slug}</span></span>
             </div>
-            <div className="mt-3 text-3xl font-bold text-gray-900">${Number(product.price).toFixed(2)}</div>
+            <div className="mt-3 text-3xl font-bold text-gray-900">{Number(product.price).toFixed(2)} RWF</div>
 
             {/* Description with clamp */}
             <div className="mt-4 text-gray-600 leading-relaxed">

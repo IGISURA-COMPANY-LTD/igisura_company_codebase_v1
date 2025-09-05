@@ -16,12 +16,13 @@ export default function AdminOverview() {
   }, []);
 
   const formatCompact  = (v) => new Intl.NumberFormat('en-US', { notation: 'compact' }).format(Number(v) || 0);
-  const formatCurrency = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(v) || 0);
+  const formatCurrency = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'rwf', maximumFractionDigits: 0 }).format(Number(v) || 0);
+  
 
-  const MetricCard = ({ label, value }) => (
-    <div className="card card-hover-lift border border-gray-300 p-6 flex flex-col justify-between transition-all">
+  const MetricCard = ({ label, value, className = '', valueClassName = '' }) => (
+    <div className={`card card-hover-lift border border-gray-300 p-6 flex flex-col justify-between transition-all ${className}`}>
       <div className="text-sm text-gray-600 mb-1">{label}</div>
-      <div className="text-3xl font-bold text-gray-900">
+      <div className={`text-3xl font-bold text-gray-900 ${valueClassName}`}>
         {value ?? <span className="skeleton h-8 w-20 rounded-md inline-block" />}
       </div>
     </div>
@@ -84,12 +85,39 @@ export default function AdminOverview() {
       </header>
 
       {/* KPI row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
-        <MetricCard label="Revenue" value={stats && formatCurrency(stats.totalRevenue)} />
-        <MetricCard label="Orders" value={stats && formatCompact(stats.totalOrders)} />
-        <MetricCard label="Products" value={stats && formatCompact(stats.totalProducts)} />
-        <MetricCard label="Pending Orders" value={stats && formatCompact(stats.pendingOrders)} />
-        <MetricCard label="Users" value={stats && formatCompact(stats.totalUsers)} />
+      <div className="flex flex-wrap sm:flex-nowrap gap-5 items-stretch">
+        {/* Revenue grows with content; keep on one line without breaking digits */}
+        <MetricCard
+          label="Revenue"
+          value={stats && formatCurrency(stats.totalRevenue)}
+          className="grow basis-[240px] min-w-[220px]"
+          valueClassName="whitespace-nowrap"
+        />
+        {/* Other cards shrink responsibly with safe minimums to avoid content overflow */}
+        <MetricCard
+          label="Orders"
+          value={stats && formatCompact(stats.totalOrders)}
+          className="shrink basis-[180px] min-w-[150px] max-w-[240px]"
+          valueClassName="truncate"
+        />
+        <MetricCard
+          label="Products"
+          value={stats && formatCompact(stats.totalProducts)}
+          className="shrink basis-[180px] min-w-[150px] max-w-[240px]"
+          valueClassName="truncate"
+        />
+        <MetricCard
+          label="Pending Orders"
+          value={stats && formatCompact(stats.pendingOrders)}
+          className="shrink basis-[180px] min-w-[150px] max-w-[240px]"
+          valueClassName="truncate"
+        />
+        <MetricCard
+          label="Users"
+          value={stats && formatCompact(stats.totalUsers)}
+          className="shrink basis-[180px] min-w-[150px] max-w-[240px]"
+          valueClassName="truncate"
+        />
       </div>
 
       {/* Charts */}

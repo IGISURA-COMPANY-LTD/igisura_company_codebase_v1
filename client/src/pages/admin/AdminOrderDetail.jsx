@@ -103,14 +103,14 @@ export default function AdminOrderDetail() {
             {order.items?.map((i) => (
               <tr key={i.productId} className="admin-tr">
                 <td className="admin-td">{i.product?.name || i.productId}</td>
-                <td className="admin-td">${Number(i.price).toFixed(2)}</td>
+                <td className="admin-td">{Number(i.price).toFixed(2)} RWF</td>
                 <td className="admin-td">{i.quantity}</td>
-                <td className="admin-td">${(i.price * i.quantity).toFixed(2)}</td>
+                <td className="admin-td">{(i.price * i.quantity).toFixed(2)} RWF</td>
               </tr>
             ))}
           </tbody>
         </table>
-        <div className="mt-3 flex justify-end text-sm"><span className="font-medium">Total:&nbsp;</span>${total.toFixed(2)}</div>
+        <div className="mt-3 flex justify-end text-sm"><span className="font-medium">Total:&nbsp;</span> {total.toFixed(2)} RWF</div>
       </div>
 
       <div className="card p-4 flex items-center justify-between">
