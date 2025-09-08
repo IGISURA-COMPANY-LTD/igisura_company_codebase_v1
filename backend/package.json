@@ -7,9 +7,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon app.js",
+    "build": "npm install && npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev --name init",
     "prisma:generate": "npx prisma generate",
-    "seed:admin": "node ./createAdmin.js"
+    "seed:admin": "node ./createAdmin.js",
+    "postdeploy": "npx prisma migrate deploy && npm run seed:admin"
   },
   "keywords": [],
   "author": "",
