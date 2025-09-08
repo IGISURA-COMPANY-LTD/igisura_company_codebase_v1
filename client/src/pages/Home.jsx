@@ -103,7 +103,7 @@ export default function Home() {
               className="mt-14 grid grid-cols-1 md:grid-cols-3 justify-items-center"
             >
               {Array.isArray(featured) && featured.length > 0 ? (
-                featured.slice(0, 3).map((p, i) => (
+                featured.slice(0, 3).map((p) => (
                   <motion.div
                     key={p.id}
                     variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0 } }}

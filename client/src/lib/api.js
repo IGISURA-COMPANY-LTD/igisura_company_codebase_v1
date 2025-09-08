@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/'
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -19,7 +19,9 @@ api.interceptors.request.use((config) => {
         }
       }
     }
-  } catch {}
+  } catch {
+    void 0
+  }
   return config
 })
 
@@ -30,7 +32,9 @@ api.interceptors.response.use(
     if (status === 401) {
       try {
         localStorage.removeItem('auth')
-      } catch {}
+      } catch {
+        void 0
+      }
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname + window.location.search
         if (!currentPath.startsWith('/login')) {

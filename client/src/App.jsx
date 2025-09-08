@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
+import api from './lib/api'
 import useAuthStore from './stores/auth'
 import Layout from './components/layout/Layout'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -71,6 +72,8 @@ const AuthBoot = () => {
   const { hydrate, isAuthenticated, fetchProfile } = useAuthStore()
   useEffect(() => {
     hydrate()
+    // Warm up backend (Render free can be cold). Ignore errors; this is best-effort.
+    api.get('/health').catch(() => {})
   }, [])
   useEffect(() => {
     if (isAuthenticated) {

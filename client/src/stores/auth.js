@@ -38,7 +38,9 @@ export const useAuthStore = create((set, get) => ({
         isAuthenticated: Boolean(parsed.token),
         isAdmin: parsed?.user?.role === 'ADMIN',
       })
-    } catch {}
+    } catch {
+      void 0
+    }
   },
 
   async login(credentials) {
