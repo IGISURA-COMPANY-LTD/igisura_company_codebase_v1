@@ -1,5 +1,6 @@
 // controllers/orderController.js
 import prisma from '../config/database.js';
+import { sendTemplatedEmail } from '../utils/email.js';
 
 export const getAllOrders = async (req, res) => {
   try {
@@ -306,7 +307,10 @@ export const updateOrderStatus = async (req, res) => {
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
-        items: true
+        items: true,
+        customer: {
+          select: { id: true, name: true, email: true }
+        }
       }
     });
 
@@ -343,14 +347,26 @@ export const updateOrderStatus = async (req, res) => {
           }
         },
         customer: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
+          select: { id: true, name: true, email: true }
         }
       }
     });
+
+    // Fire-and-forget email (non-blocking). If send fails, don't block response.
+    try {
+      const to = updatedOrder?.email || updatedOrder?.customer?.email;
+      if (to) {
+        await sendTemplatedEmail('orderStatusChanged', {
+          customerName: updatedOrder?.customerName || updatedOrder?.customer?.name,
+          orderId: updatedOrder.id,
+          prevStatus: order.status,
+          newStatus: status
+        }, { to });
+      }
+    } catch (e) {
+      // log and continue
+      console.error('Email send failed:', e?.message || e);
+    }
 
     return res.status(200).json(updatedOrder);
   } catch (error) {

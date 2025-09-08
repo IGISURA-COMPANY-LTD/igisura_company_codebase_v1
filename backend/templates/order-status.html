@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Order Status Update</title>
+    <style>
+      body { background: #f7f7f8; margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: #111827; }
+      .container { max-width: 600px; margin: 0 auto; padding: 24px; }
+      .card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; }
+      .brand { color: #059669; font-weight: 700; letter-spacing: .2px; }
+      .muted { color: #6b7280; }
+      .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; background: #ecfeff; color: #0ea5e9; font-weight: 700; font-size: 12px; }
+      .footer { font-size: 12px; color: #6b7280; margin-top: 16px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="brand">IGISURA</div>
+        <h2 style="margin: 16px 0 8px;">Order Status Update</h2>
+        <p>Hi {{customerName}},</p>
+        <p>Your order status changed from <strong>{{prevStatusPretty}}</strong> to <strong>{{newStatusPretty}}</strong>.</p>
+        <p class="muted">We will keep you posted with any further updates. If you have questions, reply to this email.</p>
+        <div class="footer">Thank you for shopping with IGISURA.</div>
+      </div>
+    </div>
+  </body>
+  </html>
+
+
+
+
